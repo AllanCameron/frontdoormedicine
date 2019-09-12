@@ -1,0 +1,259 @@
+---
+title: "Comparison of Glasgow Admission Prediction Score and Amb Score in predicting need for inpatient care"
+author: "Allan Cameron, Dominic Jones, Suzanne Mason, Colin A O'Keeffe, Eilidh Logan, David J Lowe"
+date: "10 February 2016"
+output:
+  bookdown::html_document2:
+    number_sections: no
+    self_contained: no
+    theme: journal
+    toc: yes
+    toc_float:
+      collapsed: yes
+  pdf_document: default
+  word_document: default
+csl: emergency-medicine-journal.csl
+bibliography: GAPSRefs.bib
+---
+
+#Abstract
+
+##Aim
+
+We compared the abilities of two established clinical scores to predict Emergency Department disposition: the Glasgow Admission Prediction Score (GAPS) and the Ambulatory Score (Ambs).
+
+## Methods
+
+The scores were compared in a prospective, multi-centre cohort study. We recruited consecutive patients attending ED triage at two UK sites: Northern General Hospital in Sheffield and Glasgow Royal Infirmary, between February and May of 2016. Each had a GAPS and Ambs score calculated at the time of triage, with the triage nurses and treating clinicians blinded to the scores. Patients were followed up to hospital discharge. The ability of the scores to discriminate discharge from ED, and from hospital at 12 and 48 hours after arrival, was compared using the area under the curve (AUC) of their receiving-operator characteristics (ROC).
+
+##Results
+
+1424 triage attendances were suitable for analysis during the study period, of which 567 (39.8%) were admitted. The AUC for predicting admission was significantly higher for GAPS at 0.807 (95% CI 0.785 - 0.830), compared to 0.743 (95% CI 0.717 - 0.769) for Ambs, p<0.00001. Similar results were seen when comparing ability to predict hospital stay of >12h and >48h. GAPS was also more accurate as a binary test, correctly predicting 1057 outcomes compared to 1004 for Ambs (74.2 vs 70.5%, p=0.012).
+
+##Conclusion
+
+The GAPS score is a significantly better predictor of need for hospital admission than Ambs in an unselected ED population.
+
+<br>
+
+---
+
+
+#What this paper adds
+
+##What is already known on this subject?
+
+The Ambs score is recommended by the Royal College of Physicians as a tool to determine which patients may be suitable for ambulatory emergency care. The GAPS score is known to be an accurate predictor of Emergency Department disposition from the point of triage, outperforming experienced triage nurses in most cases. It is not known which is the best predictor of disposition in an unselected Emergency Department population.
+
+##What this study adds
+
+In this prospective cohort study at two geographically distinct Emergency Departments, a direct comparison of Ambs and GAPS shows that in the general ED population, GAPS is a better predictor of ED disposition than the Amb score.
+
+<br>
+
+---
+```{r setup, echo=F, warning= FALSE, error=FALSE, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(binom)
+library(grid)
+library(gridExtra)
+library(kableExtra)
+library(bookdown)
+```
+
+
+#Introduction
+
+Crowding in the Emergency Department (ED) threatens clinical safety, reduces patient satisfaction, worsens the working environment, and increases costs [@Sun2013; @Rodi2006; @Hoot2008]. Although ED clinicians have little say on the number of patients presenting to their department, making efficient and appropriate disposition decisions can help prevent crowding by improving patient flow [@NAO2013; @Mason2014; @Peck2012; @Haraden2003].
+
+Predicting the outcome of an emergency visit, before a patient has had a full medical assessment, could help staff to direct patients to the medical service that best meets their needs; be it ED majors, a GP surgery, an ambulatory care facility, a short stay unit, a minor injuries unit, an admissions ward, or a specialty hospital bed [@King2006; @Barnes2015]. Diverting patients who do not require a full medical review in the emergency department to a more appropriate service could allow a more rational use of healthcare resources.
+
+A few disease-specific tools such as HEART, PESI, and Blatchford are already used to identify patients who have a low probability of adverse outcomes and can therefore be considered for discharge or outpatient management [@Six2013; @Aujesky2011; @Stanley2009]. However, these tools can only be applied to the small proportion of all ED patients who have these well-defined presentations.
+
+Triage is usually the first clinical assessment that a patient has after arrival to the ED, but several studies conclude that triage personnel are unable to accurately predict admission using clinical judgement alone [@Cameron2014; @Cameron2016; @RCOP2014; @Ala2012]. A variety of scoring systems have been applied at triage or in the prehospital setting to estimate the probability of admission using variables such as age, triage category and physiological early warning score. Some of these methods are more accurate than clinical judgement alone, but none has been widely adopted, perhaps because the simpler tools are not accurate enough to be clinically useful, and others are too complex for routine use.
+
+The Glasgow admission prediction score (GAPS) is an example of one such tool, which uses the data routinely collected in ED triage to predict a patient's final disposition [@Cameron2014]. It was derived from 322,000 unselected adult attendances to ED triage in Glasgow and has proved more accurate than nursing judgment in predicting ED discharge (table \@ref(tab:GAPStable) ) [@Cameron2016].
+
+```{r GAPStable, echo=FALSE,  warning=FALSE, error=FALSE, message=FALSE }
+
+GAPStable <- c(
+  "Age",
+  "National Early Warning Score (NEWS)",
+  "Triage category",
+  "",
+  "",
+  "Referred by GP",
+  "Arrived by ambulance",
+  "Admitted within last twelve months") %>%
+  cbind(c("", "", "3", "2", "1", "", "", "")) %>%
+  cbind(c("1 point per decade",
+          "1 point per point on NEWS",
+          "5", "10", "20", "10", "5", "5"))
+colnames(GAPStable) <- c("Variable", "", "Points")
+
+displayTable <- function(x) {
+  if (max(nchar(colnames(x))) < 3) x %<>% t()
+  x %>% 
+  kable("html", align = "l", booktabs = TRUE, caption = "The GAPS score") %>% 
+  kable_styling(bootstrap_options = c("hover", "compressed"),
+                full_width = FALSE, position = "left") %>%
+    row_spec(4:5, extra_css = "border:0px;")
+}
+
+displayTable(GAPStable)
+
+
+```
+
+Another example is the Amb Score, which the Royal College of Physicians recommends as part of its Ambulatory Emergency Care (AEC) toolkit [@RCOP2014]. The Amb score was developed by identifying the factors that differentiate the patients most likely to be discharged in under 12 hours from those who require a hospital stay of more than 48 hours [@Ala2012]. It was created from a cohort of 625 GP-referred emergency attendances with medical complaints in a mostly rural setting (table \@ref(tab:AMBStable) ).
+
+```{r AMBStable, echo=FALSE,  warning=FALSE, error=FALSE, message=FALSE}
+
+AMBStable <- c("Female sex", "Age <80", "Has access to personal / public transport", "IV treatment not anticipated by treating doctor", "Not acutely confused", "MEWS score = 0", "Not discharged from hospital within previous 30 days") %>% 
+  cbind(as.character(rep(1,7)))
+
+colnames(AMBStable) <- c("Variable", "Points")
+
+displayTable <- function(x) {
+  if (max(nchar(colnames(x))) < 3) x %<>% t()
+  x %>% 
+  kable("html", align = c("l", "c"), booktabs = TRUE, caption = "The Amb score") %>% 
+  kable_styling(bootstrap_options = c("hover", "compressed"),
+                full_width = FALSE, position = "left")
+}
+
+displayTable(AMBStable)
+
+```
+
+
+Since both of these scores identify a clinical group with a high probability of discharge from the front door, either could in theory be used to highlight such patients early on in the patient journey. Ambs is currently recommended by the Royal College of Physicians and Ambulatory Emergency Care Network for this purpose and is used by several UK sites [@RCOP2014]. GAPS has also been used for this purpose at several UK sites, including Nottingham, the Royal Free Hospital, Torbay Hospital, Sheffield and Glasgow.
+
+Since both GAPS and Ambs are predictors of disposition for unscheduled hospital attendances and both are in routine clinical use, we sought to determine which would better at discriminating between patients who require an inpatient stay and those who will be discharged by carrying out a prospective, multicentre observational study.
+
+<br>
+
+#Methods
+
+This was a prospective cohort study comparing the ability of two clinical scores to predict disposition decisions, and was carried out at two large Emergency Departments in different regions of the United Kingdom.
+
+##Setting and Participants
+
+We collected data on all adult patients attending for ED triage at two large urban teaching hospitals in the United Kingdom: Glasgow Royal Infirmary (GRI) and Northern General Hospital, Sheffield (NGH) which have approximately 95,000 and 150,000 attendances per year respectively.
+
+Patients who were taken directly to the resuscitation room or to minor injuries without formal nurse triage were not included in the study. All children aged below 16 years of age were excluded. Any patient who left the ED before treatment was complete was also excluded from the main analysis.
+
+The data were collected on consecutive patients at each site in 21 scheduled eight-hour blocks; these were arranged in such a way that every hour of each day of the week was represented once for each site in the sample. The data were collected between 8th and 17th February 2016 in Sheffield and between 5th and 23rd May 2016 in Glasgow.
+
+##Sample Size
+
+Our sample size was estimated using a database of past ED triage attendances at the Glasgow site with known GAPS and approximate Amb scores. We knew from a previous study that GAPS' receiving operator characteristic (ROC) would have an area under the curve (AUC) of about 0.85 [@Cameron2016]. Our database suggested that the correlation coefficient of GAPS and Ambs was approximately -0.4, with the ratio of discharges to admissions in our sample being close to 1.5. From these parameters, we calculated that to have a 95% power to detect a clinically important difference of 0.05 between the AUC of GAPS and Ambs, with statistical significance at 95%, we required a sample of 1428 attendances across the two sites [@Hanley1983]. We anticipated that we would slightly exceed this sample size and eliminate diurnal and weekday variation by collecting one full weeks' worth of data at each site.
+
+##Ethics
+
+The advice of the West of Scotland Research Ethics committee was sought and the chairman advised that this study should be considered part of service evaluation. Approval was also given by the local Caldicott guardian.
+
+##Data collection
+
+Data collection was designed to equally sample all time periods of the week totalling 168 hours. Collection periods were arranged in shifts, with a single researcher collecting data on consecutive patients at triage during each shift. The GAPS was calculated using data collected from the standard triage process at both centres.
+
+In addition, to help generate the Amb score, each patient was asked by the researcher whether they had access to private or public transport, and the triage nurse was asked by the researcher if they felt that IV therapy was likely to be required during this presentation. In cases where the nurse was unsure about the need for IV therapy, the patient was followed up within the ED to determine whether IV therapy was felt necessary by the examining doctor. However, since the aim was to predict admission from triage, if the triage nurse was relatively certain of the need (or lack of need) for IV therapy, this was not followed up. The other variables comprising each score were objective and available for each patient at the point of triage.
+
+After triage, each patient saw an assessing clinician as normal. The clinicians, who subsequently made the disposition decisions, were blinded to both scores. Patients who were admitted from the ED were followed up to hospital discharge to determine their length of hospital stay (table \@ref(tab:demogtable) ). Any patients who died in hospital or transferred to another hospital were considered not to have been discharged for the purposes of this study.
+
+```{r demogtable, echo=FALSE,  warning=FALSE, error=FALSE, message=FALSE}
+demogtable <- c("", "Total patients:", "", "Arrival by Ambulance:", "", "", "Access to Transport:", "", "", "Need for IV therapy:", "", "", "Sex:", "", "", "Patient Confused:", "", "", "Admitted in previous year:", "", "", "Triage Category:", "", "", "", "", "", "NEWS score:", "", "", "", "", "", "", "Age:", "", "", "", "", "", "", "", "", "", "Final disposition:", "") %>% 
+cbind(c("", "", "", "Yes", "No", "", "Yes", "No", "", "Yes", "No", "", "Male", "Female", "", "Yes", "No", "", "Yes", "No", "", "1", "2", "3", "4", "5", "", "0", "1", "2", "3", "4", "5+", "", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "90+", "", "Admitted", "Discharged")) %>%
+cbind(c("", "787", "", "344", "443", "", "596", "191", "", "214", "573", "", "407", "380", "", "35", "752", "", "273", "514", "", "0", "185", "528", "72", "2", "", "223", "239", "116", "75", "53", "81", "", "17", "148", "106", "117", "147", "84", "80", "79", "9", "", "334", "453")) %>%
+cbind(c("", "637", "", "333", "304", "", "498", "139", "", "240", "397", "", "294", "343", "", "17", "620", "", "209", "428", "", "26", "198", "65", "348", "0", "", "224", "187", "84", "60", "30", "52", "", "17", "119", "60", "85", "97", "62", "84", "76", "37", "", "233", "404")) %>%
+cbind(c("", "1424", "", "677", "747", "", "1094", "330", "", "454", "970", "", "701", "723", "", "52", "1372", "", "482", "942", "", "26", "383", "593", "420", "2", "", "447", "426", "200", "135", "83", "133", "", "34", "267", "166", "202", "244", "146", "164", "155", "46", "", "567", "857"))
+
+colnames(demogtable) <- c("Variable", "", "Glasgow", "Sheffield", "Total")
+
+displayTable <- function(x) {
+  if (max(nchar(colnames(x))) < 3) x %<>% t()
+  x %>% 
+  kable("html", align = c("l", "l", "c", "c", "c"), 
+        booktabs = TRUE,
+        caption = "Showing the make-up of the populations studied") %>% 
+  kable_styling(bootstrap_options = c("hover", "condensed"),
+                full_width = TRUE, position = "left") %>%
+    column_spec(1:2, bold = TRUE) %>%
+    column_spec(3:5, width = "4cm") %>%
+    row_spec((1:46)[-c(1, 3, 6, 9, 12, 15, 18, 21, 27, 34, 44)], background = "#FFFFFF", extra_css = "border:0px;") %>%
+  row_spec(c(1, 3, 6, 9, 12, 15, 18, 21, 27, 34, 44), hline_after = TRUE, extra_css = "border-bottom:1px; border-color:#BBBBBB;")
+}
+
+displayTable(demogtable)
+
+```
+
+##Statistical Analysis
+
+All statistical analysis was carried out using R v3.2.2 [@RCT2017]. We constructed two ROC curves to show the ability of GAPS and Ambs to discriminate ED disposition, categorised as hospital admission or ED discharge. The areas under the ROC curves were compared using Delong's method [@DeLong1988].
+
+To make the fairest comparison, we also tested the criteria that were used in the development of Ambs, by comparing the two scores' ability to predict hospital lengths of stay less than 12 hours and those greater than 48 hours.
+The three sets of binary outcomes against which the scores were tested were therefore:
+
+1) Admission from ED versus discharge from ED
+2) Discharge from hospital more than 48 hours after presentation versus less than 48 hours 
+3) Discharge from hospital more than 48 hours after presentation versus those discharged in less than 12 hours, retrospectively excluding those who stayed 12-48 hours (as per original Ambs paper [@Ala2012])
+
+#Results
+
+1487 adult patients attended for triage during the study, the sample population comprising 686 patients in Sheffield and 801 in Glasgow. There were 63 patients who left before treatment was complete and who were therefore excluded from analysis, leaving a sample of 1424 attendances. Of these 567 (39.8%) were admitted. Four patients who were admitted were subsequently lost to follow-up, so that their hospital length of stay was unknown. (Figure 1).
+
+```{r STARD, fig.cap="STARD diagram", echo=F}
+
+fig.paths <- paste("source_files/figure-html/GAPSvAMBSfig", 1:3, ".jpg", sep = "")
+knitr::include_graphics(path = fig.paths[1])
+
+```
+
+The area under the curve for predicting admission was 0.807 (95% CI 0.785 - 0.830) for GAPS, compared to 0.743 (95% CI 0.717 - 0.769) for Ambs, p<0.00001 (Figure 2). The cut-offs that maximized sensitivity + specificity were GAPS <17 and Ambs>5.
+
+```{r mainROC, fig.cap="ROC curve for GAPS versus Ambs", echo=F, fig.show='asis'}
+
+knitr::include_graphics(path = fig.paths[2])
+
+```
+
+There was no significant difference between the two sites with regards to the AUC of GAPS (0.800 in Glasgow vs 0.817 in Sheffield, p=0.47) or the AUC of Ambs (0.724 in Glasgow vs 0.764 in Sheffield, p=0.135). Conversely, within each site there was a significant difference between the two scores, both in Glasgow (0.800 for GAPS vs 0.724 for Ambs, p=0.0003) and in Sheffield (0.817 for GAPS vs 0.764 for Ambs, p=0.008).
+
+A similar picture was seen in ability to predict discharge from hospital within 48 hours. Discounting the four patients whose length of stay was unknown, GAPS had an AUC of 0.813 (95% CI 0.789 - 0.837), and Ambs an AUC of 0.738 (95% CI 0.709 - 0.767), p<0.00001.
+
+The pattern remained after removing the difficult middle-ground patients with a length of stay between 12 and 48 hours, as was done in the original Ambs study. In this case, GAPS had an AUC of 0.841 (95% CI 0.818 - 0.864) and Ambs' AUC was 0.769 (95% CI 0.737 - 0.795), p<0.00001 (Figure 3). The cut-offs that maximized sensitivity + specificity for this prediction were GAPS <18 and Ambs>5.
+
+```{r subgroupROC, fig.cap="ROC curve for GAPS versus Ambs removing patients with a length of stay of 12-48 hours", echo=F, fig.show='asis'}
+
+knitr::include_graphics(path = fig.paths[2])
+
+```
+
+As a binary test, using the thresholds which gave the highest percentage of correct classifications for each score, the overall accuracy for GAPS at the optimum threshold of <20 was 1057/1424 (74.2%, 95% CI 71.9% - 76.5%), whereas for Ambs the optimum cut-off of >5 correctly predicted 1004/1424 (70.5%, 95% CI 68.1% - 72.9%), p=0.012 by McNemar's test [@McNEMAR1947].
+
+#Discussion
+
+These results should be put in context. Although the figure of 39.9% seems like a high admission rate for the general ED population, this figure is only for the subset of patients who attended formal triage. Many patients were streamed directly to minor injuries by clerical staff without being included, though a much smaller number would also have been taken directly to the resuscitation room without triage. This fact is also very likely to have lowered the AUC of both scores substantially, as it removes the most easily categorised presentations, leaving only those in whom decisions are more difficult (and hence a predictive tool is more useful).
+
+In the original development of these scores, there were substantial differences in the sample populations. GAPS was derived from data collected from more than 215,000 unselected emergency attendances in an urban setting, and validated in 107,000 separate attendances [@Cameron2014]. The sample sizes were a lot smaller for the Amb Score: data from 282 patients were used to derive the score, and the sample size for validation of the score was 343 [@Ala2012]. The setting was mostly rural. Neither score was developed specifically for the general ED population, since Ambs was derived from data on GP-referred medical patients, and GAPS also included these patients along with ED and minor injury unit data.
+
+On comparison of the two scores, it was found that GAPS is a better discriminator of ED disposition and need for inpatient care than Ambs. Since Ambs also requires additional questions to be asked that are not part of routine triage, we would argue that GAPS is the more useful of the two tools in the general ED population.
+
+#Limitations
+
+A potential weakness in the derivation of both GAPS and Amb was that they were each carried out in a single geographical region. A subsequent validation study of the Amb Score in a different area found it to have a lower sensitivity (88%) and positive predictive value (39%) than in the original paper [@Thompson2015]. While this study was conducted in two centres they are both tertiary units in the UK with similar resources. Data collection only occurred during a single episode in each centre and does not account for seasonal variation in presentations or admission rates. The simplicity of GAPS when compared to machine learning or Artificial Intelligence solutions may limit is accuracy but does aid its implementation [@Janke2016].  While accuracy could be increased by focusing of specific disease groups this would limit ease of use and integration with current systems [@LaMantia2010; @Barak-Corren2017].
+
+#Conclusion
+
+Our multi-centre comparison has demonstrated the accuracy of GAPS as a predictor of patient admission in a different area of the UK with different patient and hospital resource characteristics. This is crucial when considering widespread adoption and its utility to clinicians in other centres. Since the Manchester Triaging System is in use in sites outside the UK, and the NEWS score comprises basic physiologic measurements, GAPS may still be applicable in countries with different healthcare models.
+
+This study demonstrates that GAPS is a better predictor of disposition than the Amb Score in the general ED population. While current AEC guidelines suggest the Amb Score as a tool to aid streaming of patients to AEC, we believe that GAPS is a more accurate tool and can be applied to both acute medical and ED presentations. Integration of GAPS at triage does not require any extra time or effort on the part of the triage nurse, and may enhance flow by predicting early demand for beds.
+
+As with any such clinical tool however, its purpose is to support rather than supplant human judgment; previous work has indicated that combining GAPS with a veto from triage nurses would provide an accurate strategy for bed management [@Cameron2016]. We suggest that future work should focus on implementation of this approach and impact on 'front door' performance. 
+
+#References
+
+

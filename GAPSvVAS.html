@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Allan Cameron, Alastair Ireland, Gerard McKay, Adam Stark, David J Lowe" />
+
+<meta name="date" content="2016-02-10" />
+
+<title>Predicting admission at triage: Are nurses better than a simple objective score?</title>
+
+<script src="source_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="source_files/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="source_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="source_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="source_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="source_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="source_files/navigation-1.1/tabsets.js"></script>
+<link href="source_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="source_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Predicting admission at triage: Are nurses better than a simple objective score?</h1>
+<h4 class="author"><em>Allan Cameron, Alastair Ireland, Gerard McKay, Adam Stark, David J Lowe</em></h4>
+<h4 class="date"><em>10 February 2016</em></h4>
+
+</div>
+
+
+<div id="abstract" class="section level1">
+<h1>Abstract</h1>
+<div id="aim" class="section level2">
+<h2>Aim</h2>
+<p>We compared two methods of predicting hospital admission from ED triage: probabilities estimated by triage nurses and probabilities calculated by the Glasgow Admission Prediction Score (GAPS).</p>
+</div>
+<div id="methods" class="section level2">
+<h2>Methods</h2>
+<p>In this single-centre prospective study, triage nurses estimated the probability of admission using a 100mm visual analogue scale (VAS), and GAPS was generated automatically from triage data. We compared calibration using rank sum tests, discrimination using area under receiver operating characteristic curves (AUC) and accuracy with McNemar’s test.</p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>Of 1829 attendances, 745 (40.7%) were admitted, not significantly different from GAPS’ prediction of 750 (41.0%, p=0.678). In contrast, the nurses’ mean VAS predicted 865 admissions (47.3%), overestimating by 6.6% (p&lt;0.0001). GAPS discriminated between admission and discharge as well as nurses, its AUC 0.876 compared with 0.875 for VAS (p=0.93). As a binary predictor, its accuracy was 80.6%, again comparable with VAS (79.0%), p=0.18. In the minority of attendances, when nurses felt at least 95% certain of the outcome, VAS’ accuracy was excellent, at 92.4%. However, in the remaining majority, GAPS significantly outperformed VAS on calibration (+1.2% vs +9.2%, p&lt;0.0001), discrimination (AUC 0.810 vs 0.759, p=0.001) and accuracy (75.1% vs 68.9%, p=0.0009). When we used GAPS, but ‘over-ruled’ it when clinical certainty was <span class="math inline">\(\ge\)</span> 95%, this significantly outperformed either method, with AUC 0.891 (0.877-0.907) and accuracy 82.5% (80.7%-84.2%).</p>
+</div>
+<div id="conclusions" class="section level2">
+<h2>Conclusions</h2>
+<p>GAPS, a simple clinical score, is a better predictor of admission than triage nurses, unless the nurse is sure about the outcome, in which case their clinical judgement should be respected.</p>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="key-messages" class="section level1">
+<h1>Key Messages</h1>
+<div id="what-is-already-known-on-this-subject" class="section level2">
+<h2>What is already known on this subject?</h2>
+<p>Previous studies of triage nurses’ ability to predict admission have been disappointing, except when the nurses are confident of the outcome. Early identification of the need for admission could optimise flow within the ED. The Glasgow Admission Prediction Score (GAPS) has been shown to be accurate but has not been compared directly to human judgement.</p>
+</div>
+<div id="what-might-this-study-add" class="section level2">
+<h2>What might this study add?</h2>
+<p>The study confirms that, unless they are sure about the outcome, triage nurses have a relatively low accuracy in predicting admission. It also demonstrates that GAPS is superior to nursing judgement for the majority of cases, but can be enhanced by allowing nurses to veto the prediction when the disposition is obvious.</p>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Triage is a dynamic decision-making process that prioritises a person’s need for medical care on arrival to the ED, and is critical for the department’s safe and effective running.<span class="citation">[1]</span> As the acuity, complexity and quantity of patients continues to rise, triage ensures care is prioritised to those who need it most urgently.<span class="citation">[2]</span></p>
+<p>Many clinical variables are routinely recorded at registration and triage, some of which may have valuable uses besides assessing immediate acuity. Certain data, such as demographics, route of referral and mode of arrival, may not directly affect the triage category, but can still correlate with the patient’s subsequent progress and final disposition.<span class="citation">[3]</span> If we could use these clinical parameters to determine the probability of admission at this early stage, we might be able to initiate inpatient management pathways sooner, to refer patients earlier, or even book them a bed before they are seen. Such a probability estimate might also give us more confidence to redirect some patients immediately to an ambulatory care unit or clinical decisions unit.</p>
+<p>Redirecting patients from ED to an alternative, more appropriate care provider would reduce overcrowding, which remains a constant threat to the quality, timeliness and safety of ED care.<span class="citation">[4]</span> Even among those patients who are not redirected, foreknowledge of their probable disposition would allow specialised work streams, facilitated decision support and assisted bed planning within the ED.<span class="citation">[5–8]</span></p>
+<p>The ability of triage nurses to predict admission has been studied in a number of contexts, but the results have been mixed.<span class="citation">[9,10]</span> When nurses are confident in their predictions, their accuracy tends to be high, but they are only confident about half the time, with the rest of their forecasts being uncertain and poorly predictive.<span class="citation">[11]</span> In settings where only a small proportion of patients are admitted, the specificity of nurses’ predictions is probably too low to be used to inform patient streaming.<span class="citation">[9]</span></p>
+<p>Several tools have been developed to help predict hospital admission at the time of triage, using variables such as age, triage category, physiology and presenting complaint.<span class="citation">[12,13]</span> These tools vary in complexity and predictive ability, but in general their results tend to be better than those seen in studies of triage nurses’ predictions.</p>
+<p>The Glasgow Admission Prediction Score (GAPS) is one such tool, comprising six variables that are routinely collected at triage to estimate the probability of admission (figure 1).<span class="citation">[6]</span> It was derived using a mixed-model, multivariate, logistic regression analysis of ~215,000 unscheduled care attendances in Glasgow, UK, and validated against a database of ~107,500 further attendances. Validation showed GAPS to be a good discriminator of admission and discharge, with the area under its receiver operating characteristic (ROC) curve being 0.8774.</p>
+<div class="figure" style="text-align: center"><span id="fig:GAPSScore"></span>
+<img src="source_files/figure-html/GAPSvVASfig1.jpg" alt="
+The Glasgow Admission Prediction Score." width="75%" style='margin:30px;' />
+<p class="caption">
+Figure 1:  The Glasgow Admission Prediction Score.
+</p>
+</div>
+<p>The aim of the current study was to assess prospectively the discrimination and predictive accuracy of GAPS, and to compare it against the ability of triage nurses to predict admission. The study was performed in one of the centres which contributed to the derivation of GAPS, but used a different, prospective sample to answer this question.</p>
+</div>
+<div id="methods-1" class="section level1">
+<h1>Methods</h1>
+<div id="study-aim-and-design" class="section level2">
+<h2>Study aim and design</h2>
+<p>This was a single-centre, prospective, observational study. Its primary aim was to determine whether the nurse carrying out a standard ED triage assessment can gauge the probability of admission more accurately than GAPS, which uses six objective variables to do the same thing. This was also the first prospective validation of GAPS.</p>
+</div>
+<div id="setting-and-participants" class="section level2">
+<h2>Setting and participants</h2>
+<p>The ED at Glasgow Royal Infirmary serves a predominantly urban population, with approximately 86,000 attendances each year. Data were collected on all adult patients undergoing ED triage from 30 April to 16 May 2014, a time of year when the average daily attendances and admission rate are known to be close to the annual average. Data collection continued until the target sample size of 2091 was reached. This was estimated, after exclusions, to give us 95% power to detect a real difference of 2.5% between the area under the curve (AUC) and the ROC of the two methods.<span class="citation">[14]</span></p>
+<p>Those who were directed to minor injuries by clerical staff or taken straight to the resuscitation room by paramedics, and hence who did not undergo triage, were not included in the analysis. Patients were also excluded if they were under 16, or left prior to treatment being completed (figure 2).</p>
+<div class="figure" style="text-align: center"><span id="fig:STARD"></span>
+<img src="source_files/figure-html/GAPSvVASfig2.jpg" alt="Flow chart for inclusion and exclusion, with binary results included. &lt;br&gt;GAPS, Glasgow Admission Prediction Score; VAS, visual analogue scale." width="75%" style='margin:30px;' />
+<p class="caption">
+Figure 2: Flow chart for inclusion and exclusion, with binary results included. <br>GAPS, Glasgow Admission Prediction Score; VAS, visual analogue scale.
+</p>
+</div>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The nurses carrying out triage were asked to complete a 100mm visual analogue scale (VAS), indicating their estimate of the probability that each patient would be admitted following their ED assessment. The clinicians who subsequently saw the patients in ED were blinded to the VAS.</p>
+<p>Each attendance had a GAPS score generated from the Trakcare patient management system (InterSystems Corporation, Cambridge, Massachusetts, USA) using a prespecified algorithm. This was done at the end of the study, to ensure the triage nurses and ED doctors were also blinded to GAPS.</p>
+<p>The final disposition, as recorded in the electronic patient record, was used to determine whether the attendance resulted in hospital admission. As in the original study, deaths in the department and transfers to other hospitals were counted as admissions, since in this context only active decisions to discharge should count as genuine, safe discharges.</p>
+<p>VAS scores were measured and matched to the patients’ unique identifiers by a single individual who was blinded to GAPS and final disposition. Finally, we checked all electronic records manually to ensure the GAPS data and disposition data were accurate.</p>
+</div>
+<div id="ethics" class="section level2">
+<h2>Ethics</h2>
+<p>The advice of the West of Scotland Research Ethics committee was sought and the chairman advised that this was an evaluation of anonymised routine clinical data, and formal ethics review was not necessary. Approval was also given by the local Caldicott guardian.</p>
+</div>
+<div id="statistical-analysis" class="section level2">
+<h2>Statistical analysis</h2>
+<p>All statistical analysis was carried out using R V.2. R Core Team (R: a language and environment for statistical computing. Vienna, Austria: R Foundation for Statistical Computing) and the pROC package, apart from the sample size calculation, for which we used MedCalc V.11.6 (MedCalc Software, Ostend, Belgium).<span class="citation">[15]</span> Both methods were evaluated using the AUC of their ROC curve. 95% CIs were calculated using Delong’s method.<span class="citation">[16]</span> The difference between AUCs was tested for significance by Delong’s method, using a two-tailed significance level of p&lt;0.05.</p>
+<p>A comparison of binary admit/discharge predictions was also made using the assumption that &gt;50mm on VAS represented a prediction of admission and <span class="math inline">\(\le\)</span> 50mm was a prediction of discharge. Each point on the GAPS scale can also be interpreted as a probability of admission according to the model used in its derivation (table 1). Therefore, if GAPS predicted a &gt;50% probability of admission (a score of 18 or more), this was taken as a prediction of admission, and <span class="math inline">\(\le\)</span> 50% probability (a score of 17 or lower), was taken as a prediction of discharge.6 The number of correct and incorrect predictions for each method was counted and the proportions were compared by McNemar’s test.<span class="citation">[17]</span></p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:GAPStable">Table 1: </span>Probability of admission according to original GAPS model
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+GAPS
+</th>
+<th style="text-align:left;">
+Admitted (%)
+</th>
+<th style="text-align:left;">
+GAPS
+</th>
+<th style="text-align:left;">
+Admitted (%)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+4.3
+</td>
+<td style="text-align:left;">
+19
+</td>
+<td style="text-align:left;">
+56.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+5.1
+</td>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+61.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+6.1
+</td>
+<td style="text-align:left;">
+21
+</td>
+<td style="text-align:left;">
+65.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+7.3
+</td>
+<td style="text-align:left;">
+22
+</td>
+<td style="text-align:left;">
+69.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+8.6
+</td>
+<td style="text-align:left;">
+23
+</td>
+<td style="text-align:left;">
+73.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+6
+</td>
+<td style="text-align:left;">
+10.2
+</td>
+<td style="text-align:left;">
+24
+</td>
+<td style="text-align:left;">
+77.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+7
+</td>
+<td style="text-align:left;">
+12.1
+</td>
+<td style="text-align:left;">
+25
+</td>
+<td style="text-align:left;">
+80.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8
+</td>
+<td style="text-align:left;">
+14.2
+</td>
+<td style="text-align:left;">
+26
+</td>
+<td style="text-align:left;">
+83.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+16.7
+</td>
+<td style="text-align:left;">
+27
+</td>
+<td style="text-align:left;">
+85.5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+19.5
+</td>
+<td style="text-align:left;">
+28
+</td>
+<td style="text-align:left;">
+87.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11
+</td>
+<td style="text-align:left;">
+22.6
+</td>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:left;">
+89.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:left;">
+26.0
+</td>
+<td style="text-align:left;">
+30
+</td>
+<td style="text-align:left;">
+91.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+13
+</td>
+<td style="text-align:left;">
+29.8
+</td>
+<td style="text-align:left;">
+31
+</td>
+<td style="text-align:left;">
+92.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+14
+</td>
+<td style="text-align:left;">
+33.9
+</td>
+<td style="text-align:left;">
+32
+</td>
+<td style="text-align:left;">
+93.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:left;">
+38.2
+</td>
+<td style="text-align:left;">
+33
+</td>
+<td style="text-align:left;">
+94.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16
+</td>
+<td style="text-align:left;">
+42.8
+</td>
+<td style="text-align:left;">
+34
+</td>
+<td style="text-align:left;">
+95.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+17
+</td>
+<td style="text-align:left;">
+47.4
+</td>
+<td style="text-align:left;">
+35
+</td>
+<td style="text-align:left;">
+96.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+18
+</td>
+<td style="text-align:left;">
+52.1
+</td>
+<td style="text-align:left;">
+36
+</td>
+<td style="text-align:left;">
+97.0
+</td>
+</tr>
+</tbody>
+</table>
+<p>For calibration, we compared the mean probability estimate of each method to the proportion of attendances admitted using a signed-rank sum test, and compared them with each other using a Wilcoxon signed-rank test.<span class="citation">[18]</span></p>
+<p>In addition to the planned analyses, two post hoc analyses were performed because of clear patterns seen in the data. First, because nursing staff predictions and GAPS were both predictive but not collinear, we combined the two methods in different ways to optimise prediction. This included calculating the mean of the two probabilities and its associated AUC. We also examined the diagnostic characteristics of each score when nurses were greater than and less than 95% certain of the outcome.</p>
+</div>
+</div>
+<div id="results-1" class="section level1">
+<h1>Results</h1>
+<p>Of the 3844, there were 1753 patients either sent to minors or taken to the resuscitation room, leaving 2091 who underwent scoring. After excluding children, patients who took an irregular discharge and patients with incomplete data, 1829 attendances were suitable for analysis. Of these, 745 (40.7%) were admitted (table 2).</p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:chartable">Table 2: </span>Patient characteristics
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+All patients
+</th>
+<th style="text-align:left;">
+Admitted
+</th>
+<th style="text-align:left;">
+Discharged
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Number of attendances
+</td>
+<td style="text-align:left;">
+1829
+</td>
+<td style="text-align:left;">
+745
+</td>
+<td style="text-align:left;">
+1084
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mean age (SD)
+</td>
+<td style="text-align:left;">
+47.3 (21.0)
+</td>
+<td style="text-align:left;">
+56.2 (20.6)
+</td>
+<td style="text-align:left;">
+41.2 (19.0)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Females
+</td>
+<td style="text-align:left;">
+944 (51.6%)
+</td>
+<td style="text-align:left;">
+407 (54.6%)
+</td>
+<td style="text-align:left;">
+537 (49.5%)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Median VAS (IQR)
+</td>
+<td style="text-align:left;">
+47 (6-86)
+</td>
+<td style="text-align:left;">
+87 (66-100)
+</td>
+<td style="text-align:left;">
+14 (1-48)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Median GAPS (IQR)
+</td>
+<td style="text-align:left;">
+14 (9-20)
+</td>
+<td style="text-align:left;">
+21 (17-25)
+</td>
+<td style="text-align:left;">
+10 (8-15)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mean VAS probability
+</td>
+<td style="text-align:left;">
+0.473
+</td>
+<td style="text-align:left;">
+0.771
+</td>
+<td style="text-align:left;">
+0.268
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mean GAPS probability
+</td>
+<td style="text-align:left;">
+0.410
+</td>
+<td style="text-align:left;">
+0.617
+</td>
+<td style="text-align:left;">
+0.267
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Number with VAS <span class="math inline">\(\ge\)</span> 95
+</td>
+<td style="text-align:left;">
+345 (18.9%)
+</td>
+<td style="text-align:left;">
+304 (40.8%)
+</td>
+<td style="text-align:left;">
+41 (3.8%)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Number with VAS <span class="math inline">\(\le\)</span> 5
+</td>
+<td style="text-align:left;">
+436 (23.8%)
+</td>
+<td style="text-align:left;">
+18 (2.4%)
+</td>
+<td style="text-align:left;">
+418 (38.6%)
+</td>
+</tr>
+</tbody>
+</table>
+<p>The ROC for VAS showed that triage nurse predictions were better than most studies in the literature, with an AUC of 0.875 (0.859-0.891), though this was not significantly greater than GAPS, AUC 0.876 (0.860-0.892, p=0.93) (figures 3 and 4).</p>
+<div class="figure" style="text-align: center"><span id="fig:VASROC"></span>
+<img src="source_files/figure-html/GAPSvVASfig3.jpg" alt="Receiver operating characteristic curve for visual analogue scale (VAS)." width="75%" style='margin:30px;' />
+<p class="caption">
+Figure 3: Receiver operating characteristic curve for visual analogue scale (VAS).
+</p>
+</div>
+<p><br></p>
+<div class="figure" style="text-align: center"><span id="fig:GAPSROC"></span>
+<img src="source_files/figure-html/GAPSvVASfig4.jpg" alt="Receiver operating characteristic curve for Glasgow Admission Prediction Score (GAPS)." width="75%" style='margin:30px;' />
+<p class="caption">
+Figure 4: Receiver operating characteristic curve for Glasgow Admission Prediction Score (GAPS).
+</p>
+</div>
+<p>As binary predictors, a VAS &gt;50 had a sensitivity of 605/745 (81.2%, 95% CI 78.2% to 84.0%) and a specificity of 839/1084 (77.4%, 95% CI 74.8% to 79.9%), whereas GAPS was less sensitive with 535/745 admissions correctly identified (71.8%, 95% CI 68.4% to 75.0%), but more specific with 939/1084 discharges correctly predicted (86.6%, 95% CI 84.5% to 86.7%) (table 3).</p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:ROCtab">Table 3: </span>Summary of ROC curves
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable predicting admission
+</th>
+<th style="text-align:left;">
+AUC (95% CI)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+VAS
+</td>
+<td style="text-align:left;">
+0.875 (0.859 to 0.891)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GAPS
+</td>
+<td style="text-align:left;">
+0.876 (0.860 to 0.892)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+VAS (excluding cases when clinical certainty =95%)
+</td>
+<td style="text-align:left;">
+0.759 (0.730 to 0.789)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GAPS (excluding cases when clinical certainty =95%)
+</td>
+<td style="text-align:left;">
+0.810 (0.783 to 0.836)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GAPS, with nurse veto when clinical certainty =95%
+</td>
+<td style="text-align:left;">
+0.892 (0.877 to 0.907)
+</td>
+</tr>
+</tbody>
+</table>
+<p>The overall predictive ability for VAS appeared slightly worse than GAPS, with VAS correctly predicting the outcome of 1444/1829 (79.0%, 95% CI 77.0% to 80.8%) compared with GAPS’ 1474/1829 (80.6%, 95% CI 78.7% to 82.4%), though this difference was not statistically significant by McNemar’s test (p=0.23).</p>
+<p>The overall number of admissions predicted by GAPS was 750, only 0.3% higher, and therefore, not significantly different from the actual number of 745 (p=0.9), whereas VAS predicted 865, a bias of +6.5% (p&lt;0.0001).</p>
+<p>There was no correlation between nurse seniority and accuracy of predictions, with the most junior nurses (UK band 5) correctly predicting 79.2% (CI 76.9% to 81.4%) of outcomes, senior nurses (UK band 7) correctly predicting 79.6% (CI 73.0% to 84.9%) and intermediate seniority nurses (UK band 6) correctly predicting 77.6% (CI 72.7% to 81.8%). These differences were not significant (p=0.84 by <span class="math inline">\(\chi^2\)</span> test for trend).</p>
+<p>Although there was a reasonable correlation between VAS and GAPS (Spearman’s R=0.647), their distributions were quite different. A histogram of VAS showed that in 781 cases (42.7%), the VAS was recorded as a ‘near certainty’, within 5% of definite discharge (ie, 0%-5%) or definite admission (ie, 95%-100%). This was in contrast to the more central distribution of GAPS (figures 5). These near certainty predictions were indeed very accurate, with 722 out of 781 being correct (92.4%, CI 90.3% to 94.2%), indicating that there are some clinical characteristics that make admission or discharge obvious but are not part of GAPS.</p>
+<div class="figure" style="text-align: center"><span id="fig:histograms"></span>
+<img src="source_files/figure-html/GAPSvVASfig5.jpg" alt="Combined histogram of nurses' responses and GAPS for each attendance. &lt;br&gt;GAPS, Glasgow Admission Prediction Score; VAS, visual analogue scale." width="75%" style='margin:30px;' />
+<p class="caption">
+Figure 5: Combined histogram of nurses’ responses and GAPS for each attendance. <br>GAPS, Glasgow Admission Prediction Score; VAS, visual analogue scale.
+</p>
+</div>
+<p>In fact, excepting these patients in whom the nurse was <span class="math inline">\(\ge\)</span> 95% certain of the outcome, GAPS performed significantly better than triage nurses in all metrics (AUC 0.810 vs 0.759, p=0.0051; accuracy 75.1% vs 68.9%, p=0.0009; calibration +1.2% vs +9.2%, p&lt;0.0001).</p>
+<p>The optimum result was actually made by simply creating a mean of the two probabilities, giving an AUC of 0.913 (0.900-0.926), significantly higher than VAS or GAPS (both p&lt;0.0001), and with an overall accuracy of 83.6% (95% CI 81.8% to 85.3%), higher than both GAPS alone (p=0.0017) or VAS alone (p&lt;0.0001). However, this is not a very practical solution, as it would be difficult to implement. It also suffers from significant loss of calibration due to the contribution from VAS (bias +3.4%, p&lt;0.0001).</p>
+<p>In practice, scoring systems occasionally give a result that is at odds with clinical judgement. When this happens, the confident practitioner will typically over-rule the score’s prediction. Following this approach, we tested using GAPS as a predictor, but over-ruled GAPS by clinical judgement when the triage staff thought the outcome was fairly certain. We did this by assuming that a VAS <span class="math inline">\(\\ge\)</span> 95 or VAS <span class="math inline">\(\le\)</span> 5 represented a high degree of certainty that the patient would be admitted or discharged, respectively.</p>
+<p>As shown in table 4, the result was an improvement on either approach alone, with an AUC for the combined approach of 0.892 (0.877-0.907) and an accuracy of 1509/1829 or 82.5% (80.7%-84.2%). This was significantly better than VAS alone by ROC (p=0.0053) and by accuracy (p=0.0009), as well as being better than GAPS alone by ROC (p=0.0123) and accuracy (p=0.0008). Its bias is an acceptable +2.0%, just bordering on significance (p=0.043).</p>
+<table class="table table-hover" style="font-size: 12px; width: auto !important; ">
+<caption style="font-size: initial !important;">
+<span id="tab:SSOR">Table 4: </span>Sensitivity, specificity and OR of binary tests
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+Accuracy (95% CI)
+</th>
+<th style="text-align:left;">
+Sensitivity (95% CI)
+</th>
+<th style="text-align:left;">
+Specificity (95% CI)
+</th>
+<th style="text-align:left;">
+OR (95% CI)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+VAS
+</td>
+<td style="text-align:left;">
+79.0 (77.0 to 80.8)
+</td>
+<td style="text-align:left;">
+81.2 (78.2 to 84.0)
+</td>
+<td style="text-align:left;">
+77.4 (74.8 to 79.9)
+</td>
+<td style="text-align:left;">
+14.8 (11.7 to 18.7)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GAPS
+</td>
+<td style="text-align:left;">
+80.6 (78.7 to 82.4)
+</td>
+<td style="text-align:left;">
+71.8 (68.4 to 75.0)
+</td>
+<td style="text-align:left;">
+86.6 (84.4 to 88.6)
+</td>
+<td style="text-align:left;">
+16.5 (13.0 to 20.9)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+VAS excluding cases when clinical certainty <span class="math inline">\(\ge\)</span> 95%
+</td>
+<td style="text-align:left;">
+68.4 (65.5 to 71.2)
+</td>
+<td style="text-align:left;">
+72.8 (68.3 to 77.0)
+</td>
+<td style="text-align:left;">
+65.4 (61.6 to 69.2)
+</td>
+<td style="text-align:left;">
+5.1 (3.9 to 6.7)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GAPS excluding cases when clinical certainty <span class="math inline">\(\ge\)</span> 95%
+</td>
+<td style="text-align:left;">
+75.1 (72.4 to 77.7)
+</td>
+<td style="text-align:left;">
+63.8 (59.0 to 68.4)
+</td>
+<td style="text-align:left;">
+82.7 (79.5 to 85.6)
+</td>
+<td style="text-align:left;">
+8.5 (6.3 to 11.3)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GAPS with nurse veto when clinical certainty <span class="math inline">\(\ge\)</span> 95%
+</td>
+<td style="text-align:left;">
+82.5 (80.7 to 84.2)
+</td>
+<td style="text-align:left;">
+77.0 (73.9 to 80.0)
+</td>
+<td style="text-align:left;">
+86.3 (84.0 to 88.3)
+</td>
+<td style="text-align:left;">
+21.1 (16.5 to 26.9)
+</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<hr />
+</div>
+<div id="discussion" class="section level1">
+<h1>Discussion</h1>
+<p>This study shows that triage nurses are more accurate in predicting admission when they are confident about the outcome (ie, they estimate the probability of admission to be <span class="math inline">\(\ge\)</span> 95% or <span class="math inline">\(\le\)</span> 5%). When the estimated probability of admission is intermediate (6%-94%), as it is in the majority, GAPS performs significantly better. This suggests it would be most appropriate to use GAPS in all cases but follow the standard clinical practice of over-ruling the score if the outcome is clinically obvious.</p>
+<p>GAPS has some other advantages over triage nurse judgement. Because it is created from objective variables, it is repeatable with no interobserver variability. It is also more accurate and precise than VAS, in that the estimated probabilities of admission are closer to the observed probabilities, and there is a much lower variance around the mean. This suggests GAPS is better calibrated than VAS, and therefore better at estimating the number of patients in a cohort who would be admitted, for example when estimating bed needs for the current patients in the ED. This is particularly relevant if using admission prediction to ‘fast-track’ patients to a ward, as using GAPS would lead to 28.5% fewer unnecessary admissions than using nurse predictions.</p>
+<p>GAPS can be fully automated from data entered at triage without taking up any nursing time. Because it can be calculated retrospectively from electronic records, GAPS could be used in large observational studies as a patient characteristic, a marker of the hospital resources a patient is likely to require. Such a marker could be used to demonstrate changing demands on a service, or to compare departments with different demographics.</p>
+<p>The percentage of patients admitted in this study was higher than in some other similar studies.<span class="citation">[9]</span> The main reason for this was the exclusion of a large cohort of patients who were directed to the minor injuries area by clerical staff without being formally triaged. Such patients are very rarely admitted and applying an admission prediction rule would be an inappropriate use of resources.</p>
+<p>Some caution is needed in assessing the accuracy of the combined approach in our results, as this analysis was post hoc and involved subgroup analysis, running the risk of a type 1 error. However, the difference was quite striking and unlikely to be due to chance, the literature concurs with our finding that nurses are more accurate when they are confident about their decisions, and of course this makes intuitive sense.<span class="citation">[11]</span></p>
+<p>Allocation of existing resources in the ED can have a significant impact on the care received.<span class="citation">[19]</span> Efforts to enhance triage have included physician-based triage, aimed at reducing length of stay, but early allocation to the correct work stream with GAPS may be an effective alternative.<span class="citation">[20–22]</span> The impact of altering traditional workflow strategies will have to be studied to establish safety and benefit.<span class="citation">[23]</span> It is clear, however, that the impact of overcrowding and access block in the ED contributes to adverse outcomes, and novel solutions to these problems are needed.<span class="citation">[24]</span></p>
+<p>Initiation of admission pathways earlier in the ED may enhance patient flow, as clinical decision-making is a rate-limiting step in the admission process.<span class="citation">[25]</span> While some departments have explored bypassing triage altogether using ‘direct-to-consultation-room’ models, the lack of available rooms and the reduction in efficient use of doctors’ time reduces their impact.<span class="citation">[26]</span> Identification of patients that may be fast-tracked to work streams dedicated to safe discharge or direct admission relies upon an effective means of identifying those patients.<span class="citation">[27,28]</span> Although having a positive impact on work flow is likely to require a multifaceted approach, GAPS provides both a metric for hospitalisation and a potential method for optimising patient management.</p>
+</div>
+<div id="limitations" class="section level1">
+<h1>Limitations</h1>
+<p>This study was performed in a single centre, meaning that the triage nursing staff and the population attending are different from those at other sites. This means the accuracy of GAPS and VAS are likely to be different in other units. The differences are likely to be small however, unless their demographics, admission rates and nursing experience are dramatically different from those in this study. The study was conducted in one of the centres in which GAPS was derived. Validation in other sites will be needed to confirm its widespread applicability. As highlighted in our previous paper, GAPS integrates NEWS and the Manchester triage system to calculate the score and while widely employed in the UK, would prevent use internationally.<span class="citation">[6]</span> Validation at other sites within the UK is currently underway.</p>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>Unless there is a high degree of clinical certainty about the outcome, GAPS outperforms triage nurses at predicting admission. However, as nurses tend to be right when they are very confident of the outcome, the optimum approach to predicting admission seems to be to use the combination of GAPS with a skilled triage nurse over-ruling the result when they have a high degree of confidence in the final disposition. This is an interesting approach that should be validated in future studies.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-Gerdtz2001">
+<p><a href="https://doi.org/10.1046/j.1365-2648.2001.01871.x">1 Gerdtz MF, Bucknall TK. Triage nurses’ clinical decision making. An observational study of urgency assessment. <em>Journal of Advanced Nursing</em> 2001;<strong>35</strong>:550–61. </a></p>
+</div>
+<div id="ref-CEM2013">
+<p><a href="https://www.rcem.ac.uk/docs/Policy/CEM7461-Stretched-to-the-limit-October_2013.pdf">2 The College of Emergency Medicine. Stretched to the limit: A survey of Emergency Medicine consultants in the UK. The College of Emergency Medicine 2013. </a></p>
+</div>
+<div id="ref-Travers2002">
+<p><a href="https://doi.org/10.1067/men.2002.127184">3 Travers DA, Waller AE, Bowling JM <em>et al.</em> Five-level triage system more effective than three-level in tertiary emergency department. <em>Journal of Emergency Nursing</em> 2002;<strong>28</strong>:395–400. </a></p>
+</div>
+<div id="ref-Hoot2008">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2008.03.014">4 Hoot NR, Aronsky D. Systematic review of emergency department crowding: causes, effects, and solutions. <em>Annals of Emergency Medicine</em> 2008;<strong>52</strong>:126–36. </a></p>
+</div>
+<div id="ref-Kelly2007">
+<p><a href="https://doi.org/10.1071/ah070016">5 Kelly AM, Bryant M, Cox L <em>et al.</em> Improving emergency department efficiency by patient streaming to outcomes-based teams. <em>Australian Health Review</em> 2007;<strong>31</strong>:16–21. </a></p>
+</div>
+<div id="ref-Cameron2014">
+<p><a href="https://doi.org/10.1136/emermed-2013-203200">6 Cameron A, Rodgers K, Ireland A <em>et al.</em> A simple tool to predict admission at the time of triage. <em>Emergency Medicine Journal</em> 2014;<strong>32</strong>:174–9. </a></p>
+</div>
+<div id="ref-Leegon2005">
+<p><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1560667/">7 Leegon J, Jones I, Lanaghan K <em>et al.</em> Predicting hospital admission for Emergency Department patients using a Bayesian network. <em>AMIA Annual Symposium Proceedings</em> 2005;1022.</a></p>
+</div>
+<div id="ref-Qiu2014">
+<p><a href="https://doi.org/10.1007/s10729-014-9283-1">8 Qiu S, Chinnam RB, Murat A <em>et al.</em> A cost sensitive inpatient bed reservation approach to reduce emergency department boarding times. <em>Health Care Management Science</em> 2014;<strong>18</strong>:67–85. </a></p>
+</div>
+<div id="ref-Kosowsky2001">
+<p><a href="https://doi.org/10.1053/ajem.2001.20033">9 Kosowsky JM, Shindel S, Liu T <em>et al.</em> Can emergency department triage nurses predict patients’ dispositions? <em>American Journal of Emergency Medicine</em> 2001;<strong>19</strong>:10–4. </a></p>
+</div>
+<div id="ref-Beardsell2010">
+<p><a href="https://doi.org/10.1136/emj.2010.096362">10 Beardsell I, Robinson S. Can emergency department nurses performing triage predict the need for admission? <em>Emergency Medicine Journal</em> 2010;<strong>28</strong>:959–62. </a></p>
+</div>
+<div id="ref-Stover-Baker2012">
+<p><a href="https://doi.org/10.1016/j.jen.2011.10.003">11 Stover-Baker B, Stahlman B, Pollack M. Triage nurse prediction of hospital admission. <em>Journal of Emergency Nursing</em> 2012;<strong>38</strong>:306–10. </a></p>
+</div>
+<div id="ref-Meisel2008">
+<p><a href="https://doi.org/10.1080/10903120802096647">12 Meisel ZF, Pollack CV, Mechem CC <em>et al.</em> Derivation and internal validation of a rule to predict hospital admission in prehospital patients. <em>Prehospital Emergency Care</em> 2008;<strong>12</strong>:314–9. </a></p>
+</div>
+<div id="ref-Sun2011">
+<p><a href="https://doi.org/10.1111/j.1553-2712.2011.01125.x">13 Sun Y, Heng BH, Tay SY <em>et al.</em> Predicting hospital admissions at emergency department triage using routine administrative data. <em>Academic Emergency Medicine</em> 2011;<strong>18</strong>:844–50. </a></p>
+</div>
+<div id="ref-Hanley1983">
+<p><a href="https://doi.org/10.1148/radiology.148.3.6878708">14 Hanley JA, McNeil BJ. A method of comparing the areas under receiver operating characteristic curves derived from the same cases. <em>Radiology</em> 1983;<strong>148</strong>:839–43. </a></p>
+</div>
+<div id="ref-Robin2011">
+<p><a href="https://doi.org/10.1186/1471-2105-12-77">15 Robin X, Turck N, Hainard A <em>et al.</em> pROC: an open-source package for R and S+ to analyze and compare ROC curves. <em>BMC Bioinformatics</em> 2011;<strong>12</strong>:77. </a></p>
+</div>
+<div id="ref-DeLong1988">
+<p><a href="https://doi.org/10.2307/2531595">16 DeLong ER, DeLong DM, Clarke-Pearson DL. Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach. <em>Biometrics</em> 1988;<strong>44</strong>:837–45. </a></p>
+</div>
+<div id="ref-McNEMAR1947">
+<p><a href="https://doi.org/10.1007/bf02295996">17 McNEMAR Q. Note on the sampling error of the difference between correlated proportions or percentages. <em>Psychometrika</em> 1947;<strong>12</strong>:153–7. </a></p>
+</div>
+<div id="ref-WILCOXON1946">
+<p><a href="https://doi.org/10.1093/jee/39.2.269">18 WILCOXON F. Individual comparisons of grouped data by ranking methods. <em>Journal of Economic Entomology</em> 1946;<strong>39</strong>:269. </a></p>
+</div>
+<div id="ref-Bernstein2009">
+<p><a href="https://doi.org/10.1111/j.1553-2712.2008.00295.x">19 Bernstein SL, Aronsky D, Duseja R <em>et al.</em> The effect of emergency department crowding on clinically oriented outcomes. <em>Academic Emergency Medicine</em> 2009;<strong>16</strong>:1–10. </a></p>
+</div>
+<div id="ref-Holroyd2007">
+<p><a href="https://doi.org/10.1197/j.aem.2007.04.018">20 Holroyd BR, Bullard MJ, Latoszek K <em>et al.</em> Impact of a triage liaison physician on emergency department overcrowding and throughput: a randomized controlled trial. <em>Academic Emergency Medicine</em> 2007;<strong>14</strong>:702–8. </a></p>
+</div>
+<div id="ref-Han2010">
+<p><a href="https://doi.org/10.1016/j.jemermed.2008.10.006">21 Han JH, France DJ, Levin SR <em>et al.</em> The effect of physician triage on emergency department length of stay. <em>Journal of Emergency Medicine</em> 2010;<strong>39</strong>:227–33. </a></p>
+</div>
+<div id="ref-Rogg2013">
+<p><a href="https://doi.org/10.1111/acem.12113">22 Rogg JG, White BA, Biddinger PD <em>et al.</em> A long-term analysis of physician triage screening in the emergency department. <em>Academic Emergency Medicine</em> 2013;<strong>20</strong>:374–80. </a></p>
+</div>
+<div id="ref-Wiler2010">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2009.05.021">23 Wiler JL, Gentle C, Halfpenny JM <em>et al.</em> Optimizing emergency department front-end operations. <em>Annals of Emergency Medicine</em> 2010;<strong>55</strong>:142–60. </a></p>
+</div>
+<div id="ref-Sun2013">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2012.10.026">24 Sun BC, Hsia RY, Weiss RE <em>et al.</em> Effect of emergency department crowding on outcomes of admitted patients. <em>Annals of Emergency Medicine</em> 2013;<strong>61</strong>:605–611.e6. </a></p>
+</div>
+<div id="ref-Peck2012">
+<p><a href="https://doi.org/10.1111/j.1553-2712.2012.01435.x">25 Peck JS, Benneyan JC, Nightingale DJ <em>et al.</em> Predicting emergency department inpatient admissions to improve same-day patient flow. <em>Academic Emergency Medicine</em> 2012;<strong>19</strong>:E1045–1054. </a></p>
+</div>
+<div id="ref-Chan2005">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2005.06.013">26 Chan TC, Killeen JP, Kelly D <em>et al.</em> Impact of rapid entry and accelerated care at triage on reducing emergency department patient wait times, lengths of stay, and rate of left without being seen. <em>Annals of Emergency Medicine</em> 2005;<strong>46</strong>:491–7. </a></p>
+</div>
+<div id="ref-Ieraci2008">
+<p><a href="https://doi.org/10.1111/j.1742-6723.2008.01087.x">27 Ieraci S, Digiusto E, Sonntag P <em>et al.</em> Streaming by case complexity: evaluation of a model for emergency department Fast Track. <em>Emergency Medicine Australasia</em> 2008;<strong>20</strong>:241–9. </a></p>
+</div>
+<div id="ref-Holden2011">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2010.08.001">28 Holden RJ. Lean Thinking in emergency departments: a critical review. <em>Annals of Emergency Medicine</em> 2011;<strong>57</strong>:265–78. </a></p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

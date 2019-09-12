@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Hugh McDonald, Donogh Maguire, Fiona Ritchie, Allan Cameron" />
+
+<meta name="date" content="2017-01-22" />
+
+<title>Impact of GRI’s new triage system</title>
+
+<script src="source_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="source_files/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="source_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="source_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="source_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="source_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="source_files/navigation-1.1/tabsets.js"></script>
+<script src="source_files/navigation-1.1/codefolding.js"></script>
+<link href="source_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="source_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Impact of GRI’s new triage system</h1>
+<h4 class="author"><em>Hugh McDonald, Donogh Maguire, Fiona Ritchie, Allan Cameron</em></h4>
+<h4 class="date"><em>22 January 2017</em></h4>
+
+</div>
+
+
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>This document details the data sources and methods used to compare various Emergency Department metrics before and after introduction of the new triage system developed at Glasgow Royal Infirmary. It is intended to be a complete and transparent description of the <em>analysis</em> rather than an attempt to describe the triage tool itself, or to make any inferences or value judgments about the triage system’s use. It <em>is</em> intended that a condensed version of this analysis will form part of a description of the creation and implementation of the new triaging system.</p>
+<p>All figures, tables and inline numbers in this document are created directly from the data at the time the document is created, using the R code exactly as displayed.</p>
+<p>By default, the code is hidden when this document is opened, and is written so that the text and graphs can be read without any programming knowledge. However, if required the code can be shown for transparency of our methods and so that the analysis can be re-run or amended by anyone with access to the raw data.</p>
+<p>You can also skip directly to the <a href="#Results">results</a> section.</p>
+<p><br></p>
+</div>
+<div id="methods" class="section level1">
+<h1>Methods</h1>
+<p>Before starting the analysis, we load R and the necessary libraries. <span class="citation">[1–7]</span> We also create a function to display tables in a standard format.</p>
+<pre class="r"><code>library(tidyverse)
+library(lubridate)
+library(knitr)
+library(binom)
+library(grid)
+library(gridExtra)
+library(kableExtra)
+
+displayTable &lt;- function(x) {
+  x %&gt;% 
+  t() %&gt;%
+  kable(&quot;html&quot;, align = &quot;c&quot;) %&gt;% 
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;),
+                full_width = FALSE, position = &quot;left&quot;)
+}</code></pre>
+<div id="study-period" class="section level2">
+<h2>Study period</h2>
+<p>The new triage system was begun in July 2017. In order to take into account a “bedding down” effect, we chose to start the analysis from the week beginning 31st July, and continuing for twelve weeks. To remove seasonal variation (weekly as well as annual) as much as possible, we compared this to the three-month period beginning 52 weeks earlier, on 1st August 2016.</p>
+</div>
+<div id="data-sources-and-importing" class="section level2">
+<h2>Data sources and importing</h2>
+<p>We started by obtaining records of all attendances at Emergency Departments, Minor injuries Units and Assessment Units across NHS Greater Glasgow &amp; Clyde (GGC) during the study period. These data were obtained directly from GGC’s patient management system, Trakcare (Intersystems 2014).</p>
+<p>The data were retrieved from Trakcare’s <code>tools -&gt; reports -&gt; ED 4 hour wait</code> menu item, and were provided from that source as a large table in spreadsheet format. However, since there were several thousand attendances per week, it was only practical to obtain one week’s worth of data at a time.</p>
+<p>Each weekly data set was therefore generated as a seperate report from Trakcare. The reports were created in such a way that they included every patient who was registered on the Trakcare system between 00:00:00 on the Monday and 23:59:59 on the Sunday of the week in question.</p>
+<p>The weekly reports were saved in a folder in a single user profile on the secure GGC servers, and the files were strictly labelled with the file name <code>full data YY-MM-DD.xls</code>, where <code>YY-MM-DD</code> was the date of the Monday of the week in question. This allowed all data to be referenced consistently.</p>
+<pre class="r"><code># Define the file names to be included in the analysis
+# Note myFilePath is a character string containing the local path to the raw data
+firstWeek &lt;- as.POSIXct(&quot;2016-07-04&quot;)
+allWeeks &lt;- (firstWeek + weeks(0:76)) %&gt;% as.character() %&gt;% substr(3, 10)
+fileNames &lt;- paste(&quot;full data &quot;, allWeeks, &quot;.xls&quot;, sep = &quot;&quot;)
+myFiles &lt;- paste(myFilePath, fileNames, sep = &quot;&quot;)</code></pre>
+<p>These files were then read one at a time and combined into a database for use in R.</p>
+<pre class="r"><code># Use the &quot;readxl&quot; package to read all files and merge into a single data frame
+db &lt;- as.data.frame(read_xls(myFiles[1]))
+for(i in 2:length(myFiles)) {
+                            db &lt;- rbind(db, as.data.frame(read_xls(myFiles[i])))
+}
+
+# Rename columns to make working with data easier
+names(db) &lt;- c(&quot;CHI&quot;, &quot;name&quot;, &quot;dob&quot;, &quot;sex&quot;, &quot;age&quot;, &quot;postcode&quot;, &quot;GP&quot;,
+               &quot;GPAddress&quot;, &quot;arrivals&quot;, &quot;episodeClass&quot;, &quot;status&quot;, &quot;site&quot;, 
+               &quot;unit&quot;, &quot;source&quot;, &quot;triaged&quot;, &quot;cat&quot;, &quot;assessed&quot;, &quot;ready&quot;, 
+               &quot;discharges&quot;, &quot;specialty&quot;, &quot;dischargeCode&quot;, &quot;dest&quot;, &quot;ward&quot;, 
+               &quot;void&quot;, &quot;disposal&quot;, &quot;breachAnalysis&quot;, &quot;breachText&quot;, &quot;type&quot;, 
+               &quot;transport&quot;, &quot;cons&quot;, &quot;nurse&quot;, &quot;triage.desc&quot;, &quot;LOS&quot;, &quot;diagnosis&quot;, 
+               &quot;proc&quot;)</code></pre>
+</div>
+<div id="data-cleaning" class="section level2">
+<h2>Data cleaning</h2>
+<p>The data includes all sites across GGC:</p>
+<pre class="r"><code>db$site %&gt;% factor() %&gt;% table %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+Glasgow Royal Infirmary
+</th>
+<th style="text-align:center;">
+Inverclyde Royal Hospital
+</th>
+<th style="text-align:center;">
+New Victoria Hospital
+</th>
+<th style="text-align:center;">
+Queen Elizabeth University Hospital
+</th>
+<th style="text-align:center;">
+Royal Alexandra Hospital
+</th>
+<th style="text-align:center;">
+Royal Hospital for Children
+</th>
+<th style="text-align:center;">
+Stobhill Hospital
+</th>
+<th style="text-align:center;">
+Vale of Leven Hospital
+</th>
+<th style="text-align:center;">
+West Glasgow ACH - Yorkhill
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+168214
+</td>
+<td style="text-align:center;">
+48262
+</td>
+<td style="text-align:center;">
+47739
+</td>
+<td style="text-align:center;">
+190228
+</td>
+<td style="text-align:center;">
+107457
+</td>
+<td style="text-align:center;">
+87775
+</td>
+<td style="text-align:center;">
+28973
+</td>
+<td style="text-align:center;">
+26163
+</td>
+<td style="text-align:center;">
+5429
+</td>
+</tr>
+</tbody>
+</table>
+<p>Sites other than GRI were therefore removed from the data set.</p>
+<pre class="r"><code>db &lt;- db[which(db$site == &quot;Glasgow Royal Infirmary&quot;), ]</code></pre>
+<p>There are also several patient episodes recorded on the lists of GP expects and visits to the acute assessment unit.</p>
+<pre class="r"><code>table(db$unit) %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+GRI Assessment Unit
+</th>
+<th style="text-align:center;">
+GRI ED Patient Expects
+</th>
+<th style="text-align:center;">
+GRI Emergency Department
+</th>
+<th style="text-align:center;">
+GRI GP Patient Expects
+</th>
+<th style="text-align:center;">
+GRI Minor Injuries Unit
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+23850
+</td>
+<td style="text-align:center;">
+5958
+</td>
+<td style="text-align:center;">
+90469
+</td>
+<td style="text-align:center;">
+663
+</td>
+<td style="text-align:center;">
+47274
+</td>
+</tr>
+</tbody>
+</table>
+<p>These do not represent actual ED attendances and were therefore removed.</p>
+<pre class="r"><code>db &lt;- db[-which(db$unit == &quot;GRI ED Patient Expects&quot; |
+                db$unit == &quot;GRI GP Patient Expects&quot; |
+                db$unit == &quot;GRI Assessment Unit&quot;), ]
+
+table(db$unit) %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+GRI Emergency Department
+</th>
+<th style="text-align:center;">
+GRI Minor Injuries Unit
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+90469
+</td>
+<td style="text-align:center;">
+47274
+</td>
+</tr>
+</tbody>
+</table>
+<p>Furthermore, some episodes were cancelled, and a few still undischarged on the system, representing clerical errors. Only patients with completed episodes were kept, leaving 137267 for analysis.</p>
+<pre class="r"><code># Remove any attendances which do not have the status &quot;D&quot;
+
+db &lt;- db[which(db$status == &quot;D&quot;), ]</code></pre>
+<p>The date and time records for each of arrival, triage, medical assessment and discharge were provided in the raw data as text. To work with these, they were first converted to date-time format.</p>
+<p>There were two values for discharge date and time which were recorded as being between 1am and 2am on 26th March 2016. These technically do not have a value under strict ISO time definitions, as they are during a “non-existent” hour belonging to neither GMT nor BST. These were corrected to the appropriate BST time to render them accurately.</p>
+<pre class="r"><code>db$discharges &lt;- sub(&quot;2017-03-26 01&quot;, 
+                     &quot;2017-03-26 02&quot;, db$discharges)</code></pre>
+<p>The strings could then be converted to date-time objects.</p>
+<pre class="r"><code># Convert times to POSIXct
+db$arrivals &lt;- as.POSIXct(db$arrivals)
+db$date &lt;- date(db$arrivals)
+db$triaged &lt;- as.POSIXct(db$triaged)
+db$assessed &lt;- as.POSIXct(db$assessed)
+db$discharges &lt;- as.POSIXct(db$discharges)</code></pre>
+<p>The dates of births and ages were also in character format and therefore changed to the appropriate formats.</p>
+<pre class="r"><code>db$dob &lt;- as.POSIXct(
+                     paste(substr(db$dob,7,10), &quot;-&quot;, 
+                           substr(db$dob,4,5), &quot;-&quot;, 
+                           substr(db$dob,1,2), sep = &quot;&quot;)
+                     )
+db$age &lt;- as.numeric(db$age)</code></pre>
+<p>Based on the principle that the decision to discharge from hospital should be an active decision, and that patients who are transferred to another site or who die in the department should not be counted amongst discharges, we assigned a binary outcome for each patient, as either being admitted or discharged. Those who left before assessment or treatment was complete could not be assigned to either, so were marked as NA.</p>
+<pre class="r"><code>db$admitted &lt;- numeric(length(db$CHI))
+
+db$admitted[db$dischargeCode %in% 
+              c(&quot;02 - Admitted&quot;, 
+                &quot;03 - Transferred&quot;, 
+                &quot;05 Died&quot;)] &lt;- 1
+
+db$admitted[db$dischargeCode %in% 
+              c(&quot;04a - Incomplete: left before assessment completed&quot;,
+                &quot;04C Incomplete: Patient refused treatment&quot;,
+                &quot;04E  Incomplete: Patient removed by police&quot;, 
+                &quot;Irregular Discharge, no additional detail added&quot;, 
+                &quot;Not Known&quot;)] &lt;- NA</code></pre>
+<p>We used the date-time objects to measure time to first assessment and length of stay. This also allowed us to identify patients who had breached the four-hour target.</p>
+<pre class="r"><code>db$LOS %&lt;&gt;% 
+  strsplit(&quot;:&quot;) %&gt;% 
+  lapply(function(x) {as.numeric(x[1]) * 60 + as.numeric(x[2])}) %&gt;%
+  unlist()
+                 
+db$breached &lt;- db$LOS &gt; 240
+db$breachers &lt;- 1 - as.numeric(db$breached)
+db$ttfa &lt;- difftime(db$assessed, db$arrivals, units = &quot;mins&quot;) %&gt;% as.numeric()</code></pre>
+<p>Next, we removed all attendances which did not occur during the study periods.</p>
+<pre class="r"><code>db &lt;- db[ which(db$arrivals &gt; as.POSIXct(&quot;2016-07-31 23:59:59&quot;)), ]
+db &lt;- db[-which(db$arrivals &gt; as.POSIXct(&quot;2017-10-29 23:59:59&quot;)), ]
+db$day &lt;- db$arrivals %&gt;% 
+          as.character() %&gt;% 
+          substr(1, 10) %&gt;% 
+          as.factor() %&gt;%
+          as.numeric()
+
+db &lt;- db[-which(db$arrivals &gt; as.POSIXct(&quot;2016-10-30 23:59:59&quot;) &amp; 
+                db$arrivals &lt; as.POSIXct(&quot;2017-07-31 00:00:00&quot;)), ]</code></pre>
+<p>This allowed a direct comparison of the pre-change and post-change periods, on a day-by-day basis if necessary.</p>
+<pre class="r"><code># Assign a day-of-study label to each day of the study
+db$post &lt;- db$day &gt; 150
+db$day[which(db$day &gt; 150)] &lt;- db$day[which(db$day &gt; 150)] - 364</code></pre>
+</div>
+<div id="summarising-data" class="section level2">
+<h2>Summarising Data</h2>
+<p>We used the cleaned data to create a summary database. This includes summary information of daily visits, daily breachers, daily compliance, time to first assessment and mean length of stay.</p>
+<pre class="r"><code>ddb &lt;- data.frame(date = as.POSIXct(names(table(db$date))), 
+                  day = c(1:91,1:91),
+                  prepost = rep(c(&quot;pre&quot;, &quot;post&quot;), each = 91))
+ddb$total &lt;- tapply(db$CHI, db$date, length) %&gt;% as.numeric()
+ddb$breachers &lt;- tapply(as.numeric(db$breached), db$date, sum) %&gt;% as.numeric()
+ddb$compliance &lt;- 1 - ddb$breachers / ddb$total
+ddb$ttfa &lt;- tapply(db$ttfa[!is.na(db$ttfa)], db$date[!is.na(db$ttfa)], mean) %&gt;%             as.numeric()
+ddb$LOS &lt;- tapply(db$LOS, db$date, mean) %&gt;% as.numeric()</code></pre>
+<p>We also summarised the counts, proportions and times to first assessment for each triage category.</p>
+<pre class="r"><code>catLevels &lt;- as.character(0:5)
+
+# Create raw counts for each triage category in daily database
+for (i in 1:6) {
+  rawCounts &lt;- as.numeric(tapply(db$CHI[db$cat == catLevels[i]],
+                           factor(db$date[db$cat == catLevels[i]],
+                                  levels = levels(factor(ddb$date))),
+                           length))
+  rawCounts[is.na(rawCounts)] &lt;- 0 
+  ddb &lt;- cbind(ddb, rawCounts)
+  names(ddb)[length(ddb)] &lt;- paste(&quot;cat&quot;, catLevels[i], &quot;Total&quot;, sep = &quot;&quot;)
+}
+
+# Create daily proportions for each triage category in daily database
+ddb &lt;- cbind(ddb, ddb[-(1:(length(ddb) - 6))] / ddb$total)
+names(ddb)[(length(ddb) - 5):length(ddb)] &lt;- paste(&quot;cat&quot;, catLevels, &quot;Prop&quot;, sep = &quot;&quot;)
+
+# Create daily mean time to first assessment for each category
+for (i in 1:6) {
+  meanttfa &lt;- tapply(db$ttfa[!is.na(db$ttfa) &amp; db$cat == catLevels[i]], 
+                     factor(db$date[!is.na(db$ttfa) &amp; db$cat == catLevels[i]],
+                            levels = levels(factor(db$date))), 
+                     mean)
+  ddb &lt;- cbind(ddb, as.numeric(meanttfa))
+  names(ddb)[length(ddb)] &lt;- paste(&quot;cat&quot;, catLevels[i], &quot;ttfa&quot;, sep = &quot;&quot;)
+}
+
+# Create daily mean LOS for each category
+for (i in 1:6) {
+  meanlos &lt;- tapply(db$LOS[!is.na(db$LOS) &amp; db$cat == catLevels[i]], 
+                     factor(db$date[!is.na(db$LOS) &amp; db$cat == catLevels[i]],
+                            levels = levels(factor(db$date))), 
+                     mean)
+  ddb &lt;- cbind(ddb, as.numeric(meanlos))
+  names(ddb)[length(ddb)] &lt;- paste(&quot;cat&quot;, catLevels[i], &quot;LOS&quot;, sep = &quot;&quot;)
+}
+
+# Create daily mean breach percent for each category
+for (i in 1:6) {
+  breachers &lt;- tapply(as.numeric(db$LOS[!is.na(db$LOS) &amp; db$cat == catLevels[i]] &lt; 241), 
+                     factor(db$date[!is.na(db$LOS) &amp; db$cat == catLevels[i]],
+                            levels = levels(factor(db$date))), 
+                     mean)
+  ddb &lt;- cbind(ddb, as.numeric(breachers))
+  names(ddb)[length(ddb)] &lt;- paste(&quot;cat&quot;, catLevels[i], &quot;compliance&quot;, sep = &quot;&quot;)
+}</code></pre>
+</div>
+<div id="section" class="section level2">
+<h2><br></h2>
+</div>
+</div>
+<div id="Results" class="section level1">
+<h1>Results</h1>
+<div id="total-episodes" class="section level2">
+<h2>Total episodes</h2>
+<p>The following graph shows a comparison of the daily number of attendances in 2016 (pre-implementation) and 2017 (post-implementation):</p>
+<pre class="r"><code>ddb$prepost &lt;- factor(ddb$prepost, levels = c(&quot;pre&quot;, &quot;post&quot;))
+
+fig1 &lt;- qplot(data = ddb, x = day, y = total, colour = prepost
+              ) + geom_smooth(method = &quot;loess&quot;
+              ) + labs(x = &quot;Day of study&quot;, y = &quot;Count&quot;, colour = &quot;Phase&quot;
+              ) + ggtitle(&quot;Total patients seen per day&quot;
+              )
+fig1</code></pre>
+<p><img src="source_files/figure-html/totals-1.svg" width="672" /></p>
+<p>The underlying pattern is similar, as are the counts. In 2016 the median number of patients seen in this period was 257 versus 259 in 2017, (p = 0.964).</p>
+</div>
+<div id="changes-in-triage-category" class="section level2">
+<h2>Changes in triage category</h2>
+<p>There was, however, a large difference in the number of patients assigned to different triage categories.</p>
+<pre class="r"><code>mytab &lt;- rbind(t(table(db$cat[!db$post] == 0)), t(table(db$cat[db$post] == 0)))
+  for (i in 1:5) {
+    mytab &lt;- rbind(mytab, 
+             rbind(t(table(db$cat[!db$post] == i)),
+                   t(table(db$cat[db$post] == i))))
+    }
+    colnames(mytab) &lt;- c(&quot;false&quot;, &quot;true&quot;)
+    countdb &lt;- as.data.frame(mytab)
+    rm(mytab)
+    countdb$total &lt;- rep(as.numeric(table(db$post)), times = 6)
+    countdb$prepost &lt;- factor(rep(c(&quot;pre&quot;, &quot;post&quot;), times = 6),
+                              levels = c(&quot;pre&quot;, &quot;post&quot;))
+countdb$cat &lt;- as.factor(rep(0:5,each = 2))
+countdb &lt;- cbind(countdb, 
+                  binom.confint(countdb$true, 
+                                countdb$total,
+                                method = &quot;exact&quot;)[4:6])
+countdb[, 6:8] &lt;- countdb[, 6:8] * 100 
+
+triageTable &lt;- array(
+                        paste(round(countdb$mean, 2),
+                              &quot;% (&quot;, 
+                              round(countdb$lower, 2), 
+                              &quot; - &quot;, 
+                              round(countdb$upper, 2), 
+                              &quot;%)&quot;, 
+                              sep = &quot;&quot;), 
+                        dim = c(2,6))
+                  
+pvals &lt;- numeric() 
+for (i in 0:5) {
+              pvals[i + 1] &lt;- round(chisq.test(
+                countdb[(i*2 + 1):(i*2 + 2), 1:2]
+                )$p.val, 3)
+              }
+pvals &lt;- as.character(pvals)
+pvals[which(pvals == &quot;0&quot;)] &lt;- &quot;&lt;0.001&quot;
+triageTable &lt;- rbind(as.character(0:5), triageTable, pvals)
+row.names(triageTable) &lt;- c(&quot;Triage Category&quot;, 
+                           &quot;Percent before change&quot;, 
+                           &quot;Percent after change&quot;, 
+                           &quot;p value&quot;)
+triageTable %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+Triage Category
+</th>
+<th style="text-align:center;">
+Percent before change
+</th>
+<th style="text-align:center;">
+Percent after change
+</th>
+<th style="text-align:center;">
+p value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+0
+</td>
+<td style="text-align:center;">
+13.29% (12.86 - 13.73%)
+</td>
+<td style="text-align:center;">
+1.06% (0.93 - 1.19%)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+2.73% (2.53 - 2.95%)
+</td>
+<td style="text-align:center;">
+3% (2.79 - 3.22%)
+</td>
+<td style="text-align:center;">
+0.107
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+13.19% (12.76 - 13.63%)
+</td>
+<td style="text-align:center;">
+8.99% (8.63 - 9.36%)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+56.75% (56.12 - 57.38%)
+</td>
+<td style="text-align:center;">
+27.96% (27.39 - 28.54%)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+11.68% (11.27 - 12.09%)
+</td>
+<td style="text-align:center;">
+42.53% (41.89 - 43.16%)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+5
+</td>
+<td style="text-align:center;">
+0.23% (0.18 - 0.3%)
+</td>
+<td style="text-align:center;">
+14.79% (14.34 - 15.25%)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+</tbody>
+</table>
+<p>As can be seen, there were significantly more patients in triage categories 4 and 5 after the changes were made, but significantly fewer in categories 0, 2 and 3. Only category 1 was left virtually unchanged. This is shown graphically in the plot below:</p>
+<pre class="r"><code>fig2 &lt;- ggplot(data = countdb, aes(x = cat, y = mean, fill = prepost)
+               ) + geom_col(position = &quot;dodge&quot;
+               ) + labs(x = &quot;Triage category&quot;, y = &quot;Percentage of attendances&quot;
+               ) + ggtitle(&quot;Differences in triage categorisation&quot;)
+fig2</code></pre>
+<p><img src="source_files/figure-html/triagecountsplot%20-1.svg" width="672" /></p>
+<p>A comparison of the proportion of each day’s attendances assigned to each category shown below to examine the trend over time. Here the 2016 data are in red and 2017 data are in blue.</p>
+<pre class="r"><code>fig3a &lt;- qplot(data = ddb, x = day, y = cat0Prop, colour = prepost, geom = &quot;blank&quot;
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = &quot;loess&quot;, size = 1
+      ) + ggtitle(&quot;Cat 0&quot;
+      ) + labs(x = &quot;Day of study&quot;, y = &quot;Proportion of total&quot;, colour = &quot;Phase&quot;
+      ) + theme(legend.position = &quot;none&quot;)
+
+fig3b &lt;- qplot(data = ddb, x = day, y = cat1Prop, colour = prepost, geom = &quot;blank&quot;
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = &quot;loess&quot;, size = 1
+      ) + ggtitle(&quot;Cat 1&quot;
+      ) + labs(x = &quot;Day of study&quot;, y = &quot;Proportion of total&quot;, colour = &quot;Phase&quot;
+      ) + theme(legend.position = &quot;none&quot;)
+
+fig3c &lt;- qplot(data = ddb, x = day, y = cat2Prop, colour = prepost, geom = &quot;blank&quot;
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = &quot;loess&quot;, size = 1
+      ) + ggtitle(&quot;Cat 2&quot;
+      ) + labs(x = &quot;Day of study&quot;, y = &quot;Proportion of total&quot;, colour = &quot;Phase&quot;
+      ) + theme(legend.position = &quot;none&quot;)
+
+fig3d &lt;- qplot(data = ddb, x = day, y = cat3Prop, colour = prepost, geom = &quot;blank&quot;
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = &quot;loess&quot;, size = 1
+      ) + ggtitle(&quot;Cat 3&quot;
+      ) + labs(x = &quot;Day of study&quot;, y = &quot;Proportion of total&quot;, colour = &quot;Phase&quot;
+      ) + theme(legend.position = &quot;none&quot;)
+
+fig3e &lt;- qplot(data = ddb, x = day, y = cat4Prop, colour = prepost, geom = &quot;blank&quot;
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = &quot;loess&quot;, size = 1
+      ) + ggtitle(&quot;Cat 4&quot;
+      ) + labs(x = &quot;Day of study&quot;, y = &quot;Proportion of total&quot;, colour = &quot;Phase&quot;
+      ) + theme(legend.position = &quot;none&quot;)
+
+fig3f &lt;- qplot(data = ddb, x = day, y = cat5Prop, colour = prepost, geom = &quot;blank&quot;
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = &quot;loess&quot;, size = 1
+      ) + ggtitle(&quot;Cat 5&quot;
+      ) + labs(x = &quot;Day of study&quot;, y = &quot;Proportion of total&quot;, colour = &quot;Phase&quot;
+      ) + theme(legend.position = &quot;none&quot;)
+
+
+grid.arrange(fig3a, fig3b, fig3c, fig3d, fig3e, fig3f, ncol = 2)</code></pre>
+<p><img src="source_files/figure-html/catGraphs-1.svg" width="900px" height="1080px" /></p>
+</div>
+<div id="time-to-first-assessment" class="section level2">
+<h2>Time to first assessment</h2>
+<p>There was no overall difference in time to first assessment between the two samples; the median time to first assessment was 71 minutes in 2016, and 71 minutes in 2017 after the triage changes were made (p = 0.377 by Wilcox test).</p>
+<p>However, there were significant changes in time to first assessment within each triage category, as shown in the table below:</p>
+<pre class="r"><code>standardError &lt;- function(x){
+  sqrt(var(x)/length(x))
+}
+
+meansWithCI &lt;- function(x){
+    y &lt;- na.omit(x)  
+    z &lt;- mean(y)
+    z[2] &lt;- z[1] + standardError(y) * qnorm(0.025)
+    z[3] &lt;- z[1] + standardError(y) * qnorm(0.975)
+    z &lt;- round(z, 1)
+    return(z)
+}
+
+meansWithCI.text &lt;- function(x) {
+  z &lt;- meansWithCI(x)
+  return(paste(z[1], &quot; (95% CI &quot;, z[2], &quot; - &quot;, z[3], &quot;)&quot;, sep = &quot;&quot;))
+}
+
+meansWithCI.table &lt;- function(x, y, label = &quot;new.&quot;) {
+  Levels &lt;- names(table(y))
+  resList &lt;- tapply(x, y, meansWithCI)
+  newTab &lt;- resList[[1]]
+  for (i in 2:length(Levels))  newTab &lt;- rbind(newTab, resList[[i]])
+  colnames(newTab) &lt;- paste(label, c(&quot;mean&quot;, &quot;lower&quot;, &quot;upper&quot;), sep = &quot;&quot;)
+  row.names(newTab) &lt;- Levels
+  return(newTab)
+}
+
+Wilcoxp &lt;- function(x, y, z) {
+  ss &lt;- which(!is.na(x) &amp; !is.na(y) &amp; !is.na(z))
+  x &lt;- x[ss]
+  y &lt;- y[ss]
+  z &lt;- z[ss]
+  groups &lt;- names(table(y))
+  p &lt;- numeric()
+  for (i in 1:length(groups)) { 
+    p[i] &lt;- round(wilcox.test(x[y == groups[i] &amp; z], 
+                               x[y == groups[i] &amp; !z])$p.val,
+                   3)
+  }
+  p &lt;- as.character(p)
+  p[which(p == &quot;0&quot;)] &lt;- &quot;&lt;0.001&quot;
+  return(p)
+}
+
+ttfatab &lt;- cbind(as.character(0:5),
+      as.vector(tapply(db$ttfa[!db$post], db$cat[!db$post], meansWithCI.text)),
+      as.vector(tapply(db$ttfa[db$post], db$cat[db$post], meansWithCI.text)),
+      Wilcoxp(db$ttfa, db$cat, db$post))
+
+colnames(ttfatab) &lt;- c(&quot;Category&quot;, 
+                       &quot;2016 mean time to assessment (minutes)&quot;, 
+                       &quot;2017 mean time to assessment (minutes)&quot;,
+                       &quot;p value (Wilcox test)&quot;) 
+
+ttfatab %&gt;% t() %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+Category
+</th>
+<th style="text-align:center;">
+2016 mean time to assessment (minutes)
+</th>
+<th style="text-align:center;">
+2017 mean time to assessment (minutes)
+</th>
+<th style="text-align:center;">
+p value (Wilcox test)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+0
+</td>
+<td style="text-align:center;">
+65.3 (95% CI 63.8 - 66.7)
+</td>
+<td style="text-align:center;">
+47.9 (95% CI 43.4 - 52.5)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+31.6 (95% CI 27.8 - 35.4)
+</td>
+<td style="text-align:center;">
+29.9 (95% CI 26.5 - 33.3)
+</td>
+<td style="text-align:center;">
+0.496
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+53.8 (95% CI 52.1 - 55.6)
+</td>
+<td style="text-align:center;">
+54.8 (95% CI 53 - 56.7)
+</td>
+<td style="text-align:center;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+92.3 (95% CI 91.3 - 93.2)
+</td>
+<td style="text-align:center;">
+82.7 (95% CI 81.4 - 83.9)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+82.7 (95% CI 80.9 - 84.5)
+</td>
+<td style="text-align:center;">
+90.6 (95% CI 89.6 - 91.7)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+5
+</td>
+<td style="text-align:center;">
+61.7 (95% CI 40.5 - 82.9)
+</td>
+<td style="text-align:center;">
+71.1 (95% CI 69.6 - 72.6)
+</td>
+<td style="text-align:center;">
+0.334
+</td>
+</tr>
+</tbody>
+</table>
+<p>The differences can be seen more clearly in the following chart:</p>
+<pre class="r"><code>newtab &lt;- rbind(meansWithCI.table(db$ttfa[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = &quot;ttfa.&quot;),
+                meansWithCI.table(db$ttfa[db$post], 
+                                  db$cat[db$post], 
+                                  label = &quot;ttfa.&quot;))
+newtab &lt;- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb &lt;- cbind(countdb, newtab)
+rm(newtab)
+
+fig4 &lt;- ggplot(data = countdb, aes(x = cat, y = ttfa.mean, fill = prepost)
+               ) + geom_col(position = &quot;dodge&quot;
+               ) + geom_errorbar(aes(ymin = ttfa.lower, ymax = ttfa.upper),
+                                 position = &quot;dodge&quot;, size = 0.6
+               ) + labs(x = &quot;Triage category&quot;, 
+                        y = &quot;Mean time to first assessment&quot;
+               ) + ggtitle(&quot;Time to first assessment&quot;
+               )             
+fig4</code></pre>
+<p><img src="source_files/figure-html/ttfaplot-1.svg" width="672" /></p>
+</div>
+<div id="ed-length-of-stay" class="section level2">
+<h2>ED length of stay</h2>
+<p>There was no overall difference in length of stay between the two samples either; the median length of stay was 157 minutes in 2016, and 159 minutes in 2017 after the triage changes were made (p = 0.59 by Wilcox test).</p>
+<p>There was, however, a significant change in length of stay within the triage categories, as shown below.</p>
+<pre class="r"><code>lostab &lt;- cbind(as.character(0:5),
+      as.vector(tapply(db$LOS[!db$post], db$cat[!db$post], meansWithCI.text)),
+      as.vector(tapply(db$LOS[db$post], db$cat[db$post], meansWithCI.text)),
+      Wilcoxp(db$LOS, db$cat, db$post))
+
+colnames(lostab) &lt;- c(&quot;Category&quot;, 
+                       &quot;2016 mean LOS (minutes)&quot;, 
+                       &quot;2017 mean LOS (minutes)&quot;,
+                       &quot;p value (Wilcox test)&quot;) 
+
+lostab %&gt;% t() %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+Category
+</th>
+<th style="text-align:center;">
+2016 mean LOS (minutes)
+</th>
+<th style="text-align:center;">
+2017 mean LOS (minutes)
+</th>
+<th style="text-align:center;">
+p value (Wilcox test)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+0
+</td>
+<td style="text-align:center;">
+118.8 (95% CI 116.9 - 120.7)
+</td>
+<td style="text-align:center;">
+84.5 (95% CI 76.5 - 92.4)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+196.6 (95% CI 188.8 - 204.3)
+</td>
+<td style="text-align:center;">
+185.9 (95% CI 180 - 191.8)
+</td>
+<td style="text-align:center;">
+0.172
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+187.6 (95% CI 184.7 - 190.4)
+</td>
+<td style="text-align:center;">
+189.4 (95% CI 186.4 - 192.3)
+</td>
+<td style="text-align:center;">
+0.137
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+173.6 (95% CI 172.2 - 175)
+</td>
+<td style="text-align:center;">
+181.2 (95% CI 179.4 - 183.1)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+129.7 (95% CI 127.5 - 131.9)
+</td>
+<td style="text-align:center;">
+154.4 (95% CI 153 - 155.8)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+5
+</td>
+<td style="text-align:center;">
+68.7 (95% CI 54.9 - 82.4)
+</td>
+<td style="text-align:center;">
+126.9 (95% CI 125.1 - 128.8)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+</tbody>
+</table>
+<p>This can be seen pictorially in the following chart:</p>
+<pre class="r"><code>newtab &lt;- rbind(meansWithCI.table(db$LOS[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = &quot;los.&quot;),
+                meansWithCI.table(db$LOS[db$post], 
+                                  db$cat[db$post], 
+                                  label = &quot;los.&quot;))
+newtab &lt;- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb &lt;- cbind(countdb, newtab)
+rm(newtab)
+
+fig5 &lt;- ggplot(data = countdb, aes(x = cat, y = los.mean, fill = prepost)
+               ) + geom_col(position = &quot;dodge&quot;
+               ) + geom_errorbar(aes(ymin = los.lower, ymax = los.upper),
+                                 position = &quot;dodge&quot;, size = 0.6
+               ) + labs(x = &quot;Triage category&quot;, 
+                        y = &quot;Mean length of stay&quot;
+               ) + ggtitle(&quot;Length of stay&quot;
+               )             
+fig5</code></pre>
+<p><img src="source_files/figure-html/LOSplot-1.svg" width="672" /></p>
+</div>
+<div id="four-hour-compliance" class="section level2">
+<h2>Four-hour compliance</h2>
+<p>Despite the absence of a significant change in length of stay, there was a significant improvement in compliance with the four-hour target, with 89.8% of patients in the 2016 period being discharged within 4 hours compared to 93.1% in the 2017 period, p = 0.001.</p>
+<p>The breakdown between triage groups can be seen in the following table:</p>
+<pre class="r"><code>probWithCI &lt;- function(x) { 
+  x &lt;- na.omit(x)
+  signif(as.numeric(binom.confint(sum(x), length(x))[5,4:6]),3)
+}
+
+probWithCI.text &lt;- function(x) {
+  z &lt;- 100 * probWithCI(x)
+  return(paste(z[1], &quot;% (95% CI &quot;, z[2], &quot; - &quot;, z[3], &quot;)&quot;, sep = &quot;&quot;))
+}
+
+probWithCI.table &lt;- function(x, y, label = &quot;new.&quot;) {
+  Levels &lt;- names(table(y))
+  resList &lt;- tapply(x, y, probWithCI)
+  newTab &lt;- resList[[1]]
+  for (i in 2:length(Levels))  newTab &lt;- rbind(newTab, resList[[i]])
+  colnames(newTab) &lt;- paste(label, c(&quot;mean&quot;, &quot;lower&quot;, &quot;upper&quot;), sep = &quot;&quot;)
+  row.names(newTab) &lt;- Levels
+  return(newTab)
+}
+
+propp &lt;- function(x, y, z){
+  ss &lt;- which(!is.na(x) &amp; !is.na(y) &amp; !is.na(z))
+  x &lt;- x[ss]
+  y &lt;- y[ss]
+  z &lt;- z[ss]
+    groups &lt;- names(table(y))
+  p &lt;- numeric()
+  for (i in 1:length(groups)) { 
+    p[i] &lt;- round(
+          prop.test(as.vector(table(x[y == groups[i]], z[y == groups[i]])[2,]),
+                as.vector(table(z[y == groups[i]])))$p.val,
+                   3)
+  }
+  p &lt;- as.character(p)
+  p[which(p == &quot;0&quot;)] &lt;- &quot;&lt;0.001&quot;
+  return(p)
+}
+ 
+breachtab &lt;- cbind(as.character(0:5),
+      as.vector(tapply(db$breachers[!db$post], db$cat[!db$post], probWithCI.text)),
+      as.vector(tapply(db$breachers[db$post], db$cat[db$post], probWithCI.text)),
+      suppressWarnings(propp(db$breachers, db$cat, db$post)))
+
+colnames(breachtab) &lt;- c(&quot;Category&quot;, 
+                       &quot;2016 compliance&quot;, 
+                       &quot;2017 compliance&quot;,
+                       &quot;p value (Chi square)&quot;) 
+
+breachtab %&gt;% t() %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+Category
+</th>
+<th style="text-align:center;">
+2016 compliance
+</th>
+<th style="text-align:center;">
+2017 compliance
+</th>
+<th style="text-align:center;">
+p value (Chi square)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+0
+</td>
+<td style="text-align:center;">
+98.9% (95% CI 98.5 - 99.2)
+</td>
+<td style="text-align:center;">
+99.2% (95% CI 97.1 - 99.9)
+</td>
+<td style="text-align:center;">
+0.887
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+79.6% (95% CI 76.3 - 82.6)
+</td>
+<td style="text-align:center;">
+86.1% (95% CI 83.3 - 88.5)
+</td>
+<td style="text-align:center;">
+0.002
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+85.8% (95% CI 84.5 - 87)
+</td>
+<td style="text-align:center;">
+88.6% (95% CI 87.2 - 89.9)
+</td>
+<td style="text-align:center;">
+0.003
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+87.1% (95% CI 86.5 - 87.6)
+</td>
+<td style="text-align:center;">
+89.7% (95% CI 88.9 - 90.4)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+97.8% (95% CI 97.1 - 98.3)
+</td>
+<td style="text-align:center;">
+94.5% (95% CI 94 - 94.9)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+5
+</td>
+<td style="text-align:center;">
+100% (95% CI 93.5 - 100)
+</td>
+<td style="text-align:center;">
+98.6% (95% CI 98.1 - 98.9)
+</td>
+<td style="text-align:center;">
+0.753
+</td>
+</tr>
+</tbody>
+</table>
+<p>Again, this can be seen more clearly in graphical format</p>
+<pre class="r"><code>newtab &lt;- rbind(probWithCI.table(db$breachers[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = &quot;breach.&quot;),
+                probWithCI.table(db$breachers[db$post], 
+                                  db$cat[db$post], 
+                                  label = &quot;breach.&quot;))
+newtab &lt;- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb &lt;- cbind(countdb, newtab)
+rm(newtab)
+
+fig6 &lt;- ggplot(data = countdb, aes(x = cat, y = breach.mean, fill = prepost)
+               ) + geom_col(position = &quot;dodge&quot;
+               ) + geom_errorbar(aes(ymin = breach.lower, ymax = breach.upper),
+                                 position = &quot;dodge&quot;, size = 0.6
+               ) + labs(x = &quot;Triage category&quot;, 
+                        y = &quot;Proportion seen in 4 hours&quot;
+               ) + ggtitle(&quot;4-hour compliance&quot;
+               )             
+fig6</code></pre>
+<p><img src="source_files/figure-html/breachplot-1.svg" width="672" /></p>
+</div>
+<div id="admissions" class="section level2">
+<h2>Admissions</h2>
+<p>Another important difference in the two time periods was the rate of hospital admissions. These fell significantly, from 35.1% in 2016 to 32.4% in 2017.</p>
+<p>Paradoxically, despite the overall fall in admissions, there appears to be an increase in admission rate across the triage categories. This is explained by the large change in percentage of patients from category 3 to category 4, demonstrating the statistical phenomenon of <em>Simpson’s paradox</em> <span class="citation">[8]</span>. The details are shown below:</p>
+<pre class="r"><code>admittab &lt;- cbind(as.character(0:5),
+      as.vector(tapply(db$admitted[!db$post], db$cat[!db$post], probWithCI.text)),
+      as.vector(tapply(db$admitted[db$post], db$cat[db$post], probWithCI.text)),
+      suppressWarnings(propp(db$admitted, db$cat, db$post)))
+
+colnames(admittab) &lt;- c(&quot;Category&quot;, 
+                       &quot;2016 admissions&quot;, 
+                       &quot;2017 admissions&quot;,
+                       &quot;p value (Chi square)&quot;) 
+
+admittab %&gt;% t() %&gt;% displayTable()</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:center;">
+Category
+</th>
+<th style="text-align:center;">
+2016 admissions
+</th>
+<th style="text-align:center;">
+2017 admissions
+</th>
+<th style="text-align:center;">
+p value (Chi square)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+0
+</td>
+<td style="text-align:center;">
+4.92% (95% CI 4.18 - 5.76)
+</td>
+<td style="text-align:center;">
+36% (95% CI 29.7 - 42.6)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+94.8% (95% CI 92.8 - 96.4)
+</td>
+<td style="text-align:center;">
+93.7% (95% CI 91.6 - 95.4)
+</td>
+<td style="text-align:center;">
+0.434
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+71.2% (95% CI 69.6 - 72.8)
+</td>
+<td style="text-align:center;">
+70.7% (95% CI 68.7 - 72.6)
+</td>
+<td style="text-align:center;">
+0.713
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+37.6% (95% CI 36.8 - 38.5)
+</td>
+<td style="text-align:center;">
+46.5% (95% CI 45.2 - 47.7)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+4.5% (95% CI 3.73 - 5.36)
+</td>
+<td style="text-align:center;">
+20.5% (95% CI 19.7 - 21.3)
+</td>
+<td style="text-align:center;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+5
+</td>
+<td style="text-align:center;">
+6.67% (95% CI 0.169 - 31.9)
+</td>
+<td style="text-align:center;">
+3.44% (95% CI 2.85 - 4.11)
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+<p>And graphically here.</p>
+<pre class="r"><code>newtab &lt;- rbind(probWithCI.table(db$admitted[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = &quot;admit.&quot;),
+                probWithCI.table(db$admitted[db$post], 
+                                  db$cat[db$post], 
+                                  label = &quot;admit.&quot;))
+newtab &lt;- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb &lt;- cbind(countdb, newtab)
+rm(newtab)
+
+fig7 &lt;- ggplot(data = countdb, aes(x = cat, y = admit.mean, fill = prepost)
+               ) + geom_col(position = &quot;dodge&quot;
+               ) + geom_errorbar(aes(ymin = admit.lower, ymax = admit.upper),
+                                 position = &quot;dodge&quot;, size = 0.6
+               ) + labs(x = &quot;Triage category&quot;, 
+                        y = &quot;Proportion admitted&quot;
+               ) + ggtitle(&quot;Admissions&quot;
+               )             
+fig7</code></pre>
+<p><img src="source_files/figure-html/admitplot-1.svg" width="672" /></p>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>There are some unusual findings in this analysis. Although time to first assessment and overall length of stay did not change year-on-year, there was a significant improvement in the four-hour target. This suggests a reduced variance in length of stay; indeed, the standard deviation of length of stay in 2016 was 80.2 minutes, compared to 73.3 minutes in 2017.</p>
+<p>The difference in compliance is largely driven by an improvement in compliance rates for category 1, 2 and 3 patients. The significant increase in the number of patients assigned to category 4, and their somewhat lower compliance figures were not sufficient to counterbalance this improvement.</p>
+<p>The reduction in admission rate is a striking finding, and despite admission rates for category 3 and category 4 patients both rising, the large change in ratio of patients assigned to these categories meant that overall the admission rate fell - an instance of Simpson’s paradox.</p>
+<p>These findings cannot in themselves show causation. There may well have been differences in patient demographics, hospital bed capacity, staffing, etc that had an effect. Nevertheless, the metrics for the ED seemed to improve between the two periods, and the difference in triage methods is the obvious change that occurred between them.</p>
+<hr />
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-RCT2017">
+<p><a href="https://www.R-project.org/">1 R Core Team. <em>R: A language and environment for statistical computing</em>. Vienna, Austria: R Foundation for Statistical Computing 2017.</a></p>
+</div>
+<div id="ref-Wickham2017a">
+<p><a href="https://CRAN.R-project.org/package=tidyverse">2 Wickham H. <em>Tidyverse: Easily install and load the ’tidyverse’</em>. 2017. </a></p>
+</div>
+<div id="ref-Grolemund2011">
+<p><a href="http://www.jstatsoft.org/v40/i03/">3 Grolemund G, Wickham H. Dates and times made easy with lubridate. <em>Journal of Statistical Software</em> 2011;<strong>40</strong>:1–25. </a></p>
+</div>
+<div id="ref-Xie2014">
+<p><a href="http://www.crcpress.com/product/isbn/9781466561595">4 Xie Y. Knitr: A comprehensive tool for reproducible research in R. In: Stodden V, Leisch F, Peng RD, eds. <em>Implementing reproducible computational research</em>. Chapman; Hall/CRC 2014. </a></p>
+</div>
+<div id="ref-Dorai-Raj2014">
+<p> <a href="https://CRAN.R-project.org/package=binom">5 Dorai-Raj S. <em>Binom: Binomial confidence intervals for several parameterizations</em>. 2014. </a></p>
+</div>
+<div id="ref-Auguie2016">
+<p><a href="https://CRAN.R-project.org/package=gridExtra">6 Auguie B. <em>GridExtra: Miscellaneous functions for “grid” graphics</em>. 2016. </a></p>
+</div>
+<div id="ref-Zhu2018">
+<p><a href="https://CRAN.R-project.org/package=kableExtra">7 Zhu H. <em>KableExtra: Construct complex table with ’kable’ and pipe syntax</em>. 2018.  </a></p>
+</div>
+<div id="ref-Wagner1982">
+<p><a href="https://doi.org/10.1080/00031305.1982.10482778">8 Wagner CH. Simpson’s paradox in real life. <em>The American Statistician</em> 1982;<strong>36</strong>:46–8. </a></p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

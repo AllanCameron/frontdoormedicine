@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Allan Cameron, Dominic Jones, Suzanne Mason, Colin A O’Keeffe, Eilidh Logan, David J Lowe" />
+
+<meta name="date" content="2016-02-10" />
+
+<title>Comparison of Glasgow Admission Prediction Score and Amb Score in predicting need for inpatient care</title>
+
+<script src="source_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="source_files/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="source_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="source_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="source_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="source_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="source_files/navigation-1.1/tabsets.js"></script>
+<link href="source_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="source_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Comparison of Glasgow Admission Prediction Score and Amb Score in predicting need for inpatient care</h1>
+<h4 class="author"><em>Allan Cameron, Dominic Jones, Suzanne Mason, Colin A O’Keeffe, Eilidh Logan, David J Lowe</em></h4>
+<h4 class="date"><em>10 February 2016</em></h4>
+
+</div>
+
+
+<div id="abstract" class="section level1">
+<h1>Abstract</h1>
+<div id="aim" class="section level2">
+<h2>Aim</h2>
+<p>We compared the abilities of two established clinical scores to predict Emergency Department disposition: the Glasgow Admission Prediction Score (GAPS) and the Ambulatory Score (Ambs).</p>
+</div>
+<div id="methods" class="section level2">
+<h2>Methods</h2>
+<p>The scores were compared in a prospective, multi-centre cohort study. We recruited consecutive patients attending ED triage at two UK sites: Northern General Hospital in Sheffield and Glasgow Royal Infirmary, between February and May of 2016. Each had a GAPS and Ambs score calculated at the time of triage, with the triage nurses and treating clinicians blinded to the scores. Patients were followed up to hospital discharge. The ability of the scores to discriminate discharge from ED, and from hospital at 12 and 48 hours after arrival, was compared using the area under the curve (AUC) of their receiving-operator characteristics (ROC).</p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>1424 triage attendances were suitable for analysis during the study period, of which 567 (39.8%) were admitted. The AUC for predicting admission was significantly higher for GAPS at 0.807 (95% CI 0.785 - 0.830), compared to 0.743 (95% CI 0.717 - 0.769) for Ambs, p&lt;0.00001. Similar results were seen when comparing ability to predict hospital stay of &gt;12h and &gt;48h. GAPS was also more accurate as a binary test, correctly predicting 1057 outcomes compared to 1004 for Ambs (74.2 vs 70.5%, p=0.012).</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>The GAPS score is a significantly better predictor of need for hospital admission than Ambs in an unselected ED population.</p>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="what-this-paper-adds" class="section level1">
+<h1>What this paper adds</h1>
+<div id="what-is-already-known-on-this-subject" class="section level2">
+<h2>What is already known on this subject?</h2>
+<p>The Ambs score is recommended by the Royal College of Physicians as a tool to determine which patients may be suitable for ambulatory emergency care. The GAPS score is known to be an accurate predictor of Emergency Department disposition from the point of triage, outperforming experienced triage nurses in most cases. It is not known which is the best predictor of disposition in an unselected Emergency Department population.</p>
+</div>
+<div id="what-this-study-adds" class="section level2">
+<h2>What this study adds</h2>
+<p>In this prospective cohort study at two geographically distinct Emergency Departments, a direct comparison of Ambs and GAPS shows that in the general ED population, GAPS is a better predictor of ED disposition than the Amb score.</p>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Crowding in the Emergency Department (ED) threatens clinical safety, reduces patient satisfaction, worsens the working environment, and increases costs <span class="citation">[1–3]</span>. Although ED clinicians have little say on the number of patients presenting to their department, making efficient and appropriate disposition decisions can help prevent crowding by improving patient flow <span class="citation">[4–7]</span>.</p>
+<p>Predicting the outcome of an emergency visit, before a patient has had a full medical assessment, could help staff to direct patients to the medical service that best meets their needs; be it ED majors, a GP surgery, an ambulatory care facility, a short stay unit, a minor injuries unit, an admissions ward, or a specialty hospital bed <span class="citation">[8,9]</span>. Diverting patients who do not require a full medical review in the emergency department to a more appropriate service could allow a more rational use of healthcare resources.</p>
+<p>A few disease-specific tools such as HEART, PESI, and Blatchford are already used to identify patients who have a low probability of adverse outcomes and can therefore be considered for discharge or outpatient management <span class="citation">[10–12]</span>. However, these tools can only be applied to the small proportion of all ED patients who have these well-defined presentations.</p>
+<p>Triage is usually the first clinical assessment that a patient has after arrival to the ED, but several studies conclude that triage personnel are unable to accurately predict admission using clinical judgement alone <span class="citation">[13–16]</span>. A variety of scoring systems have been applied at triage or in the prehospital setting to estimate the probability of admission using variables such as age, triage category and physiological early warning score. Some of these methods are more accurate than clinical judgement alone, but none has been widely adopted, perhaps because the simpler tools are not accurate enough to be clinically useful, and others are too complex for routine use.</p>
+<p>The Glasgow admission prediction score (GAPS) is an example of one such tool, which uses the data routinely collected in ED triage to predict a patient’s final disposition <span class="citation">[13]</span>. It was derived from 322,000 unselected adult attendances to ED triage in Glasgow and has proved more accurate than nursing judgment in predicting ED discharge (table <a href="#tab:GAPStable">1</a> ) <span class="citation">[14]</span>.</p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:GAPStable">Table 1: </span>The GAPS score
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Points
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Age
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1 point per decade
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+National Early Warning Score (NEWS)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1 point per point on NEWS
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Triage category
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border:0px;">
+</td>
+<td style="text-align:left;border:0px;">
+2
+</td>
+<td style="text-align:left;border:0px;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border:0px;">
+</td>
+<td style="text-align:left;border:0px;">
+1
+</td>
+<td style="text-align:left;border:0px;">
+20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Referred by GP
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Arrived by ambulance
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Admitted within last twelve months
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+</tbody>
+</table>
+<p>Another example is the Amb Score, which the Royal College of Physicians recommends as part of its Ambulatory Emergency Care (AEC) toolkit <span class="citation">[15]</span>. The Amb score was developed by identifying the factors that differentiate the patients most likely to be discharged in under 12 hours from those who require a hospital stay of more than 48 hours <span class="citation">[16]</span>. It was created from a cohort of 625 GP-referred emergency attendances with medical complaints in a mostly rural setting (table <a href="#tab:AMBStable">2</a> ).</p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:AMBStable">Table 2: </span>The Amb score
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:center;">
+Points
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Female sex
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Age &lt;80
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Has access to personal / public transport
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+IV treatment not anticipated by treating doctor
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Not acutely confused
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MEWS score = 0
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Not discharged from hospital within previous 30 days
+</td>
+<td style="text-align:center;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+<p>Since both of these scores identify a clinical group with a high probability of discharge from the front door, either could in theory be used to highlight such patients early on in the patient journey. Ambs is currently recommended by the Royal College of Physicians and Ambulatory Emergency Care Network for this purpose and is used by several UK sites <span class="citation">[15]</span>. GAPS has also been used for this purpose at several UK sites, including Nottingham, the Royal Free Hospital, Torbay Hospital, Sheffield and Glasgow.</p>
+<p>Since both GAPS and Ambs are predictors of disposition for unscheduled hospital attendances and both are in routine clinical use, we sought to determine which would better at discriminating between patients who require an inpatient stay and those who will be discharged by carrying out a prospective, multicentre observational study.</p>
+<p><br></p>
+</div>
+<div id="methods-1" class="section level1">
+<h1>Methods</h1>
+<p>This was a prospective cohort study comparing the ability of two clinical scores to predict disposition decisions, and was carried out at two large Emergency Departments in different regions of the United Kingdom.</p>
+<div id="setting-and-participants" class="section level2">
+<h2>Setting and Participants</h2>
+<p>We collected data on all adult patients attending for ED triage at two large urban teaching hospitals in the United Kingdom: Glasgow Royal Infirmary (GRI) and Northern General Hospital, Sheffield (NGH) which have approximately 95,000 and 150,000 attendances per year respectively.</p>
+<p>Patients who were taken directly to the resuscitation room or to minor injuries without formal nurse triage were not included in the study. All children aged below 16 years of age were excluded. Any patient who left the ED before treatment was complete was also excluded from the main analysis.</p>
+<p>The data were collected on consecutive patients at each site in 21 scheduled eight-hour blocks; these were arranged in such a way that every hour of each day of the week was represented once for each site in the sample. The data were collected between 8th and 17th February 2016 in Sheffield and between 5th and 23rd May 2016 in Glasgow.</p>
+</div>
+<div id="sample-size" class="section level2">
+<h2>Sample Size</h2>
+<p>Our sample size was estimated using a database of past ED triage attendances at the Glasgow site with known GAPS and approximate Amb scores. We knew from a previous study that GAPS’ receiving operator characteristic (ROC) would have an area under the curve (AUC) of about 0.85 <span class="citation">[14]</span>. Our database suggested that the correlation coefficient of GAPS and Ambs was approximately -0.4, with the ratio of discharges to admissions in our sample being close to 1.5. From these parameters, we calculated that to have a 95% power to detect a clinically important difference of 0.05 between the AUC of GAPS and Ambs, with statistical significance at 95%, we required a sample of 1428 attendances across the two sites <span class="citation">[17]</span>. We anticipated that we would slightly exceed this sample size and eliminate diurnal and weekday variation by collecting one full weeks’ worth of data at each site.</p>
+</div>
+<div id="ethics" class="section level2">
+<h2>Ethics</h2>
+<p>The advice of the West of Scotland Research Ethics committee was sought and the chairman advised that this study should be considered part of service evaluation. Approval was also given by the local Caldicott guardian.</p>
+</div>
+<div id="data-collection" class="section level2">
+<h2>Data collection</h2>
+<p>Data collection was designed to equally sample all time periods of the week totalling 168 hours. Collection periods were arranged in shifts, with a single researcher collecting data on consecutive patients at triage during each shift. The GAPS was calculated using data collected from the standard triage process at both centres.</p>
+<p>In addition, to help generate the Amb score, each patient was asked by the researcher whether they had access to private or public transport, and the triage nurse was asked by the researcher if they felt that IV therapy was likely to be required during this presentation. In cases where the nurse was unsure about the need for IV therapy, the patient was followed up within the ED to determine whether IV therapy was felt necessary by the examining doctor. However, since the aim was to predict admission from triage, if the triage nurse was relatively certain of the need (or lack of need) for IV therapy, this was not followed up. The other variables comprising each score were objective and available for each patient at the point of triage.</p>
+<p>After triage, each patient saw an assessing clinician as normal. The clinicians, who subsequently made the disposition decisions, were blinded to both scores. Patients who were admitted from the ED were followed up to hospital discharge to determine their length of hospital stay (table <a href="#tab:demogtable">3</a> ). Any patients who died in hospital or transferred to another hospital were considered not to have been discharged for the purposes of this study.</p>
+<table class="table table-hover table-condensed">
+<caption>
+<span id="tab:demogtable">Table 3: </span>Showing the make-up of the populations studied
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:center;">
+Glasgow
+</th>
+<th style="text-align:center;">
+Sheffield
+</th>
+<th style="text-align:center;">
+Total
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Total patients:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+787
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+637
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+1424
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Arrival by Ambulance:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Yes
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+344
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+333
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+677
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+No
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+443
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+304
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+747
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Access to Transport:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Yes
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+596
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+498
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+1094
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+No
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+191
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+139
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+330
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Need for IV therapy:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Yes
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+214
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+240
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+454
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+No
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+573
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+397
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+970
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Sex:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Male
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+407
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+294
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+701
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Female
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+380
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+343
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+723
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Patient Confused:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Yes
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+35
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+17
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+No
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+752
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+620
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+1372
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Admitted in previous year:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Yes
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+273
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+209
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+482
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+No
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+514
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+428
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+942
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Triage Category:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+1
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+0
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+26
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+2
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+185
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+198
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+383
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+3
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+528
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+65
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+593
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+4
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+72
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+348
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+420
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+5
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+2
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+0
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+NEWS score:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+0
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+223
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+224
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+447
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+1
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+239
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+187
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+426
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+2
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+116
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+84
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+3
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+75
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+60
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+135
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+4
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+53
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+30
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+83
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+5+
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+81
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+52
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+133
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Age:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+10-19
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+17
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+17
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+20-29
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+148
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+119
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+267
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+30-39
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+106
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+60
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+166
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+40-49
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+117
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+85
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+202
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+50-59
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+147
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+97
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+244
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+60-69
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+84
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+62
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+146
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+70-79
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+80
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+84
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+164
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+80-89
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+79
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+76
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+155
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+90+
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+9
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+37
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+46
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:left;font-weight: bold;border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+<td style="text-align:center;width: 4cm; border-bottom:1px; border-color:#BBBBBB;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Final disposition:
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Admitted
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+334
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+233
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+567
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+</td>
+<td style="text-align:left;font-weight: bold;background-color: #FFFFFF;border:0px;">
+Discharged
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+453
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+404
+</td>
+<td style="text-align:center;width: 4cm; background-color: #FFFFFF;border:0px;">
+857
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="statistical-analysis" class="section level2">
+<h2>Statistical Analysis</h2>
+<p>All statistical analysis was carried out using R v3.2.2 <span class="citation">[18]</span>. We constructed two ROC curves to show the ability of GAPS and Ambs to discriminate ED disposition, categorised as hospital admission or ED discharge. The areas under the ROC curves were compared using Delong’s method <span class="citation">[19]</span>.</p>
+<p>To make the fairest comparison, we also tested the criteria that were used in the development of Ambs, by comparing the two scores’ ability to predict hospital lengths of stay less than 12 hours and those greater than 48 hours. The three sets of binary outcomes against which the scores were tested were therefore:</p>
+<ol style="list-style-type: decimal">
+<li>Admission from ED versus discharge from ED</li>
+<li>Discharge from hospital more than 48 hours after presentation versus less than 48 hours</li>
+<li>Discharge from hospital more than 48 hours after presentation versus those discharged in less than 12 hours, retrospectively excluding those who stayed 12-48 hours (as per original Ambs paper <span class="citation">[16]</span>)</li>
+</ol>
+</div>
+</div>
+<div id="results-1" class="section level1">
+<h1>Results</h1>
+<p>1487 adult patients attended for triage during the study, the sample population comprising 686 patients in Sheffield and 801 in Glasgow. There were 63 patients who left before treatment was complete and who were therefore excluded from analysis, leaving a sample of 1424 attendances. Of these 567 (39.8%) were admitted. Four patients who were admitted were subsequently lost to follow-up, so that their hospital length of stay was unknown. (Figure 1).</p>
+<div class="figure"><span id="fig:STARD"></span>
+<img src="source_files/figure-html/GAPSvAMBSfig1.jpg" alt="STARD diagram" width="1000" />
+<p class="caption">
+Figure 1: STARD diagram
+</p>
+</div>
+<p>The area under the curve for predicting admission was 0.807 (95% CI 0.785 - 0.830) for GAPS, compared to 0.743 (95% CI 0.717 - 0.769) for Ambs, p&lt;0.00001 (Figure 2). The cut-offs that maximized sensitivity + specificity were GAPS &lt;17 and Ambs&gt;5.</p>
+<div class="figure"><span id="fig:mainROC"></span>
+<img src="source_files/figure-html/GAPSvAMBSfig2.jpg" alt="ROC curve for GAPS versus Ambs" width="2610" />
+<p class="caption">
+Figure 2: ROC curve for GAPS versus Ambs
+</p>
+</div>
+<p>There was no significant difference between the two sites with regards to the AUC of GAPS (0.800 in Glasgow vs 0.817 in Sheffield, p=0.47) or the AUC of Ambs (0.724 in Glasgow vs 0.764 in Sheffield, p=0.135). Conversely, within each site there was a significant difference between the two scores, both in Glasgow (0.800 for GAPS vs 0.724 for Ambs, p=0.0003) and in Sheffield (0.817 for GAPS vs 0.764 for Ambs, p=0.008).</p>
+<p>A similar picture was seen in ability to predict discharge from hospital within 48 hours. Discounting the four patients whose length of stay was unknown, GAPS had an AUC of 0.813 (95% CI 0.789 - 0.837), and Ambs an AUC of 0.738 (95% CI 0.709 - 0.767), p&lt;0.00001.</p>
+<p>The pattern remained after removing the difficult middle-ground patients with a length of stay between 12 and 48 hours, as was done in the original Ambs study. In this case, GAPS had an AUC of 0.841 (95% CI 0.818 - 0.864) and Ambs’ AUC was 0.769 (95% CI 0.737 - 0.795), p&lt;0.00001 (Figure 3). The cut-offs that maximized sensitivity + specificity for this prediction were GAPS &lt;18 and Ambs&gt;5.</p>
+<div class="figure"><span id="fig:subgroupROC"></span>
+<img src="source_files/figure-html/GAPSvAMBSfig2.jpg" alt="ROC curve for GAPS versus Ambs removing patients with a length of stay of 12-48 hours" width="2610" />
+<p class="caption">
+Figure 3: ROC curve for GAPS versus Ambs removing patients with a length of stay of 12-48 hours
+</p>
+</div>
+<p>As a binary test, using the thresholds which gave the highest percentage of correct classifications for each score, the overall accuracy for GAPS at the optimum threshold of &lt;20 was 1057/1424 (74.2%, 95% CI 71.9% - 76.5%), whereas for Ambs the optimum cut-off of &gt;5 correctly predicted 1004/1424 (70.5%, 95% CI 68.1% - 72.9%), p=0.012 by McNemar’s test <span class="citation">[20]</span>.</p>
+</div>
+<div id="discussion" class="section level1">
+<h1>Discussion</h1>
+<p>These results should be put in context. Although the figure of 39.9% seems like a high admission rate for the general ED population, this figure is only for the subset of patients who attended formal triage. Many patients were streamed directly to minor injuries by clerical staff without being included, though a much smaller number would also have been taken directly to the resuscitation room without triage. This fact is also very likely to have lowered the AUC of both scores substantially, as it removes the most easily categorised presentations, leaving only those in whom decisions are more difficult (and hence a predictive tool is more useful).</p>
+<p>In the original development of these scores, there were substantial differences in the sample populations. GAPS was derived from data collected from more than 215,000 unselected emergency attendances in an urban setting, and validated in 107,000 separate attendances <span class="citation">[13]</span>. The sample sizes were a lot smaller for the Amb Score: data from 282 patients were used to derive the score, and the sample size for validation of the score was 343 <span class="citation">[16]</span>. The setting was mostly rural. Neither score was developed specifically for the general ED population, since Ambs was derived from data on GP-referred medical patients, and GAPS also included these patients along with ED and minor injury unit data.</p>
+<p>On comparison of the two scores, it was found that GAPS is a better discriminator of ED disposition and need for inpatient care than Ambs. Since Ambs also requires additional questions to be asked that are not part of routine triage, we would argue that GAPS is the more useful of the two tools in the general ED population.</p>
+</div>
+<div id="limitations" class="section level1">
+<h1>Limitations</h1>
+<p>A potential weakness in the derivation of both GAPS and Amb was that they were each carried out in a single geographical region. A subsequent validation study of the Amb Score in a different area found it to have a lower sensitivity (88%) and positive predictive value (39%) than in the original paper <span class="citation">[21]</span>. While this study was conducted in two centres they are both tertiary units in the UK with similar resources. Data collection only occurred during a single episode in each centre and does not account for seasonal variation in presentations or admission rates. The simplicity of GAPS when compared to machine learning or Artificial Intelligence solutions may limit is accuracy but does aid its implementation <span class="citation">[22]</span>. While accuracy could be increased by focusing of specific disease groups this would limit ease of use and integration with current systems <span class="citation">[23,24]</span>.</p>
+</div>
+<div id="conclusion-1" class="section level1">
+<h1>Conclusion</h1>
+<p>Our multi-centre comparison has demonstrated the accuracy of GAPS as a predictor of patient admission in a different area of the UK with different patient and hospital resource characteristics. This is crucial when considering widespread adoption and its utility to clinicians in other centres. Since the Manchester Triaging System is in use in sites outside the UK, and the NEWS score comprises basic physiologic measurements, GAPS may still be applicable in countries with different healthcare models.</p>
+<p>This study demonstrates that GAPS is a better predictor of disposition than the Amb Score in the general ED population. While current AEC guidelines suggest the Amb Score as a tool to aid streaming of patients to AEC, we believe that GAPS is a more accurate tool and can be applied to both acute medical and ED presentations. Integration of GAPS at triage does not require any extra time or effort on the part of the triage nurse, and may enhance flow by predicting early demand for beds.</p>
+<p>As with any such clinical tool however, its purpose is to support rather than supplant human judgment; previous work has indicated that combining GAPS with a veto from triage nurses would provide an accurate strategy for bed management <span class="citation">[14]</span>. We suggest that future work should focus on implementation of this approach and impact on ‘front door’ performance.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-Sun2013">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2012.10.026">1 Sun BC, Hsia RY, Weiss RE <em>et al.</em> Effect of emergency department crowding on outcomes of admitted patients. <em>Annals of Emergency Medicine</em> 2013;<strong>61</strong>:605–611.e6. </a></p>
+</div>
+<div id="ref-Rodi2006">
+<p><a href="https://doi.org/10.1097/00019514-200607000-00006">2 Rodi SW, Grau MV, Orsini CM. Evaluation of a fast track unit: alignment of resources and demand results in improved satisfaction and decreased length of stay for emergency department patients. <em>Quality Management in Health Care</em> 2006;<strong>15</strong>:163–70. </a></p>
+</div>
+<div id="ref-Hoot2008">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2008.03.014">3 Hoot NR, Aronsky D. Systematic review of emergency department crowding: causes, effects, and solutions. <em>Annals of Emergency Medicine</em> 2008;<strong>52</strong>:126–36. </a></p>
+</div>
+<div id="ref-NAO2013">
+<p><a href="https://www.nao.org.uk/wp-content/uploads/2013/10/10288-001-Emergency-admissions.pdf">4 National Audit Office. <em>Emergency admissions to hospital: managing the demand.</em> 2013. </a></p>
+</div>
+<div id="ref-Mason2014">
+<p><a href="https://doi.org/10.1186/s13049-014-0055-1">5 Mason S, Mountain G, Turner J <em>et al.</em> Innovations to reduce demand and crowding in emergency care; a review study. <em>Scand J Trauma Resusc Emerg Med</em> 2014;<strong>22</strong>:55. </a></p>
+</div>
+<div id="ref-Peck2012">
+<p><a href="https://doi.org/10.1111/j.1553-2712.2012.01435.x">6 Peck JS, Benneyan JC, Nightingale DJ <em>et al.</em> Predicting emergency department inpatient admissions to improve same-day patient flow. <em>Academic Emergency Medicine</em> 2012;<strong>19</strong>:E1045–1054. </a></p>
+</div>
+<div id="ref-Haraden2003">
+<p><a href="https://hospitalmedicine.ucsf.edu/improve/optimizing_pt_flow_white_paper2003.pdf">7 Haraden C LE Nolan T. Optimizing patient flow: Moving patients smoothly through acute care setting. Institute for Healthcare Improvement 2003. </a></p>
+</div>
+<div id="ref-King2006">
+<p><a href="https://doi.org/10.1111/j.1742-6723.2006.00872.x">8 King DL, Ben-Tovim DI, Bassham J. Redesigning emergency department patient flows: application of Lean Thinking to health care. <em>Emergency Medicine Australasia</em> 2006;<strong>18</strong>:391–7. </a></p>
+</div>
+<div id="ref-Barnes2015">
+<p><a href="https://doi.org/10.1093/jamia/ocv106">9 Barnes S, Hamrock E, Toerper M <em>et al.</em> Real-time prediction of inpatient length of stay for discharge prioritization. <em>Journal of the American Medical Informatics Association</em> 2015;<strong>23</strong>:e2–e10. </a></p>
+</div>
+<div id="ref-Six2013">
+<p><a href="https://doi.org/10.1097/hpc.0b013e31828b327e">10 Six AJ, Cullen L, Backus BE <em>et al.</em> The HEART score for the assessment of patients with chest pain in the emergency department: a multinational validation study. <em>Crit Pathw Cardiol</em> 2013;<strong>12</strong>:121–6. </a></p>
+</div>
+<div id="ref-Aujesky2011">
+<p><a href="https://doi.org/10.1016/s0140-6736(11)60824-6">11 Aujesky D, Roy PM, Verschuren F <em>et al.</em> Outpatient versus inpatient treatment for patients with acute pulmonary embolism: an international, open-label, randomised, non-inferiority trial. <em>Lancet</em> 2011;<strong>378</strong>:41–8. </a></p>
+</div>
+<div id="ref-Stanley2009">
+<p><a href="https://doi.org/10.1016/s0140-6736(08)61769-9">12 Stanley AJ, Ashley D, Dalton HR <em>et al.</em> Outpatient management of patients with low-risk upper-gastrointestinal haemorrhage: multicentre validation and prospective evaluation. <em>Lancet</em> 2009;<strong>373</strong>:42–7. </a></p>
+</div>
+<div id="ref-Cameron2014">
+<p><a href="https://doi.org/10.1136/emermed-2013-203200">13 Cameron A, Rodgers K, Ireland A <em>et al.</em> A simple tool to predict admission at the time of triage. <em>Emergency Medicine Journal</em> 2014;<strong>32</strong>:174–9. </a></p>
+</div>
+<div id="ref-Cameron2016">
+<p><a href="https://doi.org/10.1136/emermed-2014-204455">14 Cameron A, Ireland AJ, McKay GA <em>et al.</em> Predicting admission at triage: Are nurses better than a simple objective score? <em>Emergency Medicine Journal</em> 2017;<strong>34</strong>:2–7. </a></p>
+</div>
+<div id="ref-RCOP2014">
+<p><a href="https://www.rcplondon.ac.uk/file/1178/download?token=BSxTPZvH">15 Royal College Of Physicians. Acute care toolkit 10: ambulatory emergency care. Royal College Of Physicians 2014. </a></p>
+</div>
+<div id="ref-Ala2012">
+<p><a href="https://doi.org/10.7861/clinmedicine.12-5-420">16 Ala L, Mack J, Shaw R <em>et al.</em> Selecting ambulatory emergency care (AEC) patients from the medical emergency in-take: the derivation and validation of the Amb score. <em>Clin Med (Lond)</em> 2012;<strong>12</strong>:420–6. </a></p>
+</div>
+<div id="ref-Hanley1983">
+<p><a href="https://doi.org/10.1148/radiology.148.3.6878708">17 Hanley JA, McNeil BJ. A method of comparing the areas under receiver operating characteristic curves derived from the same cases. <em>Radiology</em> 1983;<strong>148</strong>:839–43. </a></p>
+</div>
+<div id="ref-RCT2017">
+<p><a href="https://www.R-project.org/">18 R Core Team. <em>R: A language and environment for statistical computing</em>. Vienna, Austria: R Foundation for Statistical Computing 2017. </a></p>
+</div>
+<div id="ref-DeLong1988">
+<p><a href="https://doi.org/10.2307/2531595">19 DeLong ER, DeLong DM, Clarke-Pearson DL. Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach. <em>Biometrics</em> 1988;<strong>44</strong>:837–45. </a></p>
+</div>
+<div id="ref-McNEMAR1947">
+<p><a href="https://doi.org/10.1007/bf02295996">20 McNEMAR Q. Note on the sampling error of the difference between correlated proportions or percentages. <em>Psychometrika</em> 1947;<strong>12</strong>:153–7. </a></p>
+</div>
+<div id="ref-Thompson2015">
+<p><a href="https://doi.org/10.7861/clinmedicine.15-3-222">21 Thompson A, Wennike N. Testing the AMB score - can it distinguish patients who are suitable for ambulatory care? <em>Clin Med (Lond)</em> 2015;<strong>15</strong>:222–4. </a></p>
+</div>
+<div id="ref-Janke2016">
+<p><a href="https://doi.org/10.1016/j.annemergmed.2015.06.024">22 Janke AT, Overbeek DL, Kocher KE <em>et al.</em> Exploring the potential of predictive analytics and big data in emergency care. <em>Annals of Emergency Medicine</em> 2016;<strong>67</strong>:227–36. </a></p>
+</div>
+<div id="ref-LaMantia2010">
+<p><a href="https://doi.org/10.1111/j.1553-2712.2009.00675.x">23 LaMantia MA, Platts-Mills TF, Biese K <em>et al.</em> Predicting hospital admission and returns to the emergency department for elderly patients. <em>Academic Emergency Medicine</em> 2010;<strong>17</strong>:252–9. </a></p>
+</div>
+<div id="ref-Barak-Corren2017">
+<p><a href="https://doi.org/10.1136/emermed-2014-203819">24 Barak-Corren Y, Israelit SH, Reis BY. Progressive prediction of hospitalisation in the emergency department: Uncovering hidden patterns to improve patient flow. <em>Emergency Medicine Journal</em> 2017;<strong>34</strong>:308–14. </a></p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

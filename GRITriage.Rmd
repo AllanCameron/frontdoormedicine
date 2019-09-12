@@ -1,0 +1,739 @@
+---
+title: "Impact of GRI's new triage system"
+author: "Hugh McDonald, Donogh Maguire, Fiona Ritchie, Allan Cameron"
+date: "22 January 2017"
+output:
+  html_document:
+    code_folding: hide
+    self_contained: no
+    theme: journal
+    toc: yes
+    toc_float:
+      collapsed: yes
+  pdf_document: default
+  word_document: default
+csl: emergency-medicine-journal.csl
+bibliography: GAPSRefs.bib
+---
+
+```{r setup, include = FALSE}
+# Set knitr options for this document and add hidden file path
+knitr::opts_chunk$set(echo = TRUE)
+myFilePath <- "\\\\XGGC.SCOT.NHS.UK\\GGCData\\FolderRedirects\\GRI5\\cameral931\\My Documents\\Documents\\EDLs\\Full data\\"
+```
+
+# Overview
+
+This document details the data sources and methods used to compare various Emergency Department metrics before and after introduction of the new triage system developed at Glasgow Royal Infirmary. It is intended to be a complete and transparent description of the *analysis* rather than an attempt to describe the triage tool itself, or to make any inferences or value judgments about the triage system's use. It *is* intended that a condensed version of this analysis will form part of a description of the creation and implementation of the new triaging system.
+
+All figures, tables and inline numbers in this document are created directly from the data at the time the document is created, using the R code exactly as displayed. 
+
+By default, the code is hidden when this document is opened, and is written so that the text and graphs can be read without any programming knowledge. However, if required the code can be shown for transparency of our methods and so that the analysis can be re-run or amended by anyone with access to the raw data.
+
+You can also skip directly to the [results](#Results) section.
+
+<br>
+
+# Methods
+
+Before starting the analysis, we load R and the necessary libraries. [@RCT2017; @Wickham2017a; @Grolemund2011; @Xie2014; @Dorai-Raj2014; @Auguie2016; @Zhu2018] We also create a function to display tables in a standard format.
+
+```{r loadlibraries, eval=T, echo=T, results='hide', warning=FALSE, error=FALSE, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(binom)
+library(grid)
+library(gridExtra)
+library(kableExtra)
+
+displayTable <- function(x) {
+  x %>% 
+  t() %>%
+  kable("html", align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = FALSE, position = "left")
+}
+
+```
+
+## Study period
+
+The new triage system was begun in July 2017. In order to take into account a "bedding down" effect, we chose to start the analysis from the week beginning 31st July, and continuing for twelve weeks. To remove seasonal variation (weekly as well as annual) as much as possible, we compared this to the three-month period beginning 52 weeks earlier, on 1st August 2016.
+
+## Data sources and importing
+
+We started by obtaining records of all attendances at Emergency Departments,  Minor injuries Units and Assessment Units across NHS Greater Glasgow & Clyde (GGC) during the study period. These data were obtained directly from GGC's patient management system, Trakcare (Intersystems 2014). 
+
+The data were retrieved from Trakcare's `tools -> reports -> ED 4 hour wait` menu item, and were provided from that source as a large table in spreadsheet format. However, since there were several thousand attendances per week, it was only practical to obtain one week's worth of data at a time. 
+
+Each weekly data set was therefore generated as a seperate report from Trakcare. The reports were created in such a way that they included every patient who was registered on the Trakcare system between 00:00:00 on the Monday and 23:59:59 on the Sunday of the week in question.
+
+The weekly reports were saved in a folder in a single user profile on the secure GGC servers, and the files were strictly labelled with the file name `full data YY-MM-DD.xls`, where `YY-MM-DD` was the date of the Monday of the week in question. This allowed all data to be referenced consistently. 
+
+```{r filenames}
+
+# Define the file names to be included in the analysis
+# Note myFilePath is a character string containing the local path to the raw data
+firstWeek <- as.POSIXct("2016-07-04")
+allWeeks <- (firstWeek + weeks(0:76)) %>% as.character() %>% substr(3, 10)
+fileNames <- paste("full data ", allWeeks, ".xls", sep = "")
+myFiles <- paste(myFilePath, fileNames, sep = "")
+```
+
+These files were then read one at a time and combined into a database for use in R. 
+
+```{r readfiles, eval=F, echo=T}
+# Use the "readxl" package to read all files and merge into a single data frame
+db <- as.data.frame(read_xls(myFiles[1]))
+for(i in 2:length(myFiles)) {
+                            db <- rbind(db, as.data.frame(read_xls(myFiles[i])))
+}
+
+# Rename columns to make working with data easier
+names(db) <- c("CHI", "name", "dob", "sex", "age", "postcode", "GP",
+               "GPAddress", "arrivals", "episodeClass", "status", "site", 
+               "unit", "source", "triaged", "cat", "assessed", "ready", 
+               "discharges", "specialty", "dischargeCode", "dest", "ward", 
+               "void", "disposal", "breachAnalysis", "breachText", "type", 
+               "transport", "cons", "nurse", "triage.desc", "LOS", "diagnosis", 
+               "proc")
+```
+
+```{r reallyReadFiles, eval=T, echo=F}
+# Load data frame of all the raw spreadsheets. Equal to result of code above
+# This is included to prevent running the time-consuming parsing of spreadsheets
+# every time the document is compiled
+db <- readRDS("\\\\xggc.scot.nhs.uk\\GGCData\\FolderRedirects\\GRI5\\cameral931\\My Documents\\Documents\\AAU stats\\R\\data\\Rdata\\UCCdb.rds")
+names(db) <- c("CHI", "name", "dob", "sex", "age", "postcode", "GP",
+               "GPAddress", "arrivals", "episodeClass", "status", "site", 
+               "unit", "source", "triaged", "cat", "assessed", "ready", 
+               "discharges", "specialty", "dischargeCode", "dest", "ward", 
+               "void", "disposal", "breachAnalysis", "breachText", "type", 
+               "transport", "cons", "nurse", "triage.desc", "LOS", "diagnosis", 
+               "proc")
+```
+
+## Data cleaning
+
+The data includes all sites across GGC:
+
+```{r siteCleaning}
+
+db$site %>% factor() %>% table %>% displayTable()
+
+```
+
+Sites other than GRI were therefore removed from the data set.
+
+```{r sitecleaning2}
+db <- db[which(db$site == "Glasgow Royal Infirmary"), ]
+```
+
+There are also several patient episodes recorded on the lists of GP expects and visits to the acute assessment unit. 
+
+```{r removeExpects}
+
+table(db$unit) %>% displayTable()
+
+```
+
+These do not represent actual ED attendances and were therefore removed.
+
+```{r removeexpects2}
+db <- db[-which(db$unit == "GRI ED Patient Expects" |
+                db$unit == "GRI GP Patient Expects" |
+                db$unit == "GRI Assessment Unit"), ]
+
+table(db$unit) %>% displayTable()
+
+```
+
+Furthermore, some episodes were cancelled, and a few still undischarged on the system, representing clerical errors. Only patients with completed episodes  were kept, leaving `r  length(which(db$status == "D"))` for analysis.
+
+```{r removeCancelled}
+# Remove any attendances which do not have the status "D"
+
+db <- db[which(db$status == "D"), ]
+```
+
+The date and time records for each of arrival, triage, medical assessment and discharge were provided in the raw data as text. To work with these, they were first converted to date-time format.
+
+There were two values for discharge date and time which were recorded as being between 1am and 2am on 26th March 2016. These technically do not have a value under strict ISO time definitions, as they are during a "non-existent" hour belonging to neither GMT nor BST. These were corrected to the appropriate BST time to render them accurately.
+
+```{r BST}
+db$discharges <- sub("2017-03-26 01", 
+                     "2017-03-26 02", db$discharges)
+```
+
+The strings could then be converted to date-time objects.
+
+```{r POSIX}
+
+# Convert times to POSIXct
+db$arrivals <- as.POSIXct(db$arrivals)
+db$date <- date(db$arrivals)
+db$triaged <- as.POSIXct(db$triaged)
+db$assessed <- as.POSIXct(db$assessed)
+db$discharges <- as.POSIXct(db$discharges)
+
+```
+
+The dates of births and ages were also in character format and therefore changed to the appropriate formats.
+
+```{r age}
+db$dob <- as.POSIXct(
+                     paste(substr(db$dob,7,10), "-", 
+                           substr(db$dob,4,5), "-", 
+                           substr(db$dob,1,2), sep = "")
+                     )
+db$age <- as.numeric(db$age)
+```
+
+Based on the principle that the decision to discharge from hospital should be an active decision, and that patients who are transferred to another site or who die in the department should not be counted amongst discharges, we assigned a binary outcome for each patient, as either being admitted or discharged. Those who left before assessment or treatment was complete could not be assigned to either, so were marked as NA.
+
+```{r admitted}
+
+db$admitted <- numeric(length(db$CHI))
+
+db$admitted[db$dischargeCode %in% 
+              c("02 - Admitted", 
+                "03 - Transferred", 
+                "05 Died")] <- 1
+
+db$admitted[db$dischargeCode %in% 
+              c("04a - Incomplete: left before assessment completed",
+                "04C Incomplete: Patient refused treatment",
+                "04E  Incomplete: Patient removed by police", 
+                "Irregular Discharge, no additional detail added", 
+                "Not Known")] <- NA
+
+```
+
+We used the date-time objects to measure time to first assessment and length of stay. This also allowed us to identify patients who had breached the four-hour target.
+
+```{r LOSBreachers}
+db$LOS %<>% 
+  strsplit(":") %>% 
+  lapply(function(x) {as.numeric(x[1]) * 60 + as.numeric(x[2])}) %>%
+  unlist()
+                 
+db$breached <- db$LOS > 240
+db$breachers <- 1 - as.numeric(db$breached)
+db$ttfa <- difftime(db$assessed, db$arrivals, units = "mins") %>% as.numeric()
+```
+
+Next, we removed all attendances which did not occur during the study periods.
+
+```{r studyPeriod}
+db <- db[ which(db$arrivals > as.POSIXct("2016-07-31 23:59:59")), ]
+db <- db[-which(db$arrivals > as.POSIXct("2017-10-29 23:59:59")), ]
+db$day <- db$arrivals %>% 
+          as.character() %>% 
+          substr(1, 10) %>% 
+          as.factor() %>%
+          as.numeric()
+
+db <- db[-which(db$arrivals > as.POSIXct("2016-10-30 23:59:59") & 
+                db$arrivals < as.POSIXct("2017-07-31 00:00:00")), ]
+```
+
+This allowed a direct comparison of the pre-change and post-change periods, on a day-by-day basis if necessary.
+
+```{r createPrepost}
+# Assign a day-of-study label to each day of the study
+db$post <- db$day > 150
+db$day[which(db$day > 150)] <- db$day[which(db$day > 150)] - 364
+
+```
+
+## Summarising Data
+
+We used the cleaned data to create a summary database. This includes summary information of daily visits, daily breachers, daily compliance, time to first assessment and mean length of stay.
+
+```{r summaryDB}
+ddb <- data.frame(date = as.POSIXct(names(table(db$date))), 
+                  day = c(1:91,1:91),
+                  prepost = rep(c("pre", "post"), each = 91))
+ddb$total <- tapply(db$CHI, db$date, length) %>% as.numeric()
+ddb$breachers <- tapply(as.numeric(db$breached), db$date, sum) %>% as.numeric()
+ddb$compliance <- 1 - ddb$breachers / ddb$total
+ddb$ttfa <- tapply(db$ttfa[!is.na(db$ttfa)], db$date[!is.na(db$ttfa)], mean) %>%             as.numeric()
+ddb$LOS <- tapply(db$LOS, db$date, mean) %>% as.numeric()
+```
+
+We also summarised the counts, proportions and times to first assessment for each triage category.
+
+```{r catSummaries}
+
+catLevels <- as.character(0:5)
+
+# Create raw counts for each triage category in daily database
+for (i in 1:6) {
+  rawCounts <- as.numeric(tapply(db$CHI[db$cat == catLevels[i]],
+                           factor(db$date[db$cat == catLevels[i]],
+                                  levels = levels(factor(ddb$date))),
+                           length))
+  rawCounts[is.na(rawCounts)] <- 0 
+  ddb <- cbind(ddb, rawCounts)
+  names(ddb)[length(ddb)] <- paste("cat", catLevels[i], "Total", sep = "")
+}
+
+# Create daily proportions for each triage category in daily database
+ddb <- cbind(ddb, ddb[-(1:(length(ddb) - 6))] / ddb$total)
+names(ddb)[(length(ddb) - 5):length(ddb)] <- paste("cat", catLevels, "Prop", sep = "")
+
+# Create daily mean time to first assessment for each category
+for (i in 1:6) {
+  meanttfa <- tapply(db$ttfa[!is.na(db$ttfa) & db$cat == catLevels[i]], 
+                     factor(db$date[!is.na(db$ttfa) & db$cat == catLevels[i]],
+                            levels = levels(factor(db$date))), 
+                     mean)
+  ddb <- cbind(ddb, as.numeric(meanttfa))
+  names(ddb)[length(ddb)] <- paste("cat", catLevels[i], "ttfa", sep = "")
+}
+
+# Create daily mean LOS for each category
+for (i in 1:6) {
+  meanlos <- tapply(db$LOS[!is.na(db$LOS) & db$cat == catLevels[i]], 
+                     factor(db$date[!is.na(db$LOS) & db$cat == catLevels[i]],
+                            levels = levels(factor(db$date))), 
+                     mean)
+  ddb <- cbind(ddb, as.numeric(meanlos))
+  names(ddb)[length(ddb)] <- paste("cat", catLevels[i], "LOS", sep = "")
+}
+
+# Create daily mean breach percent for each category
+for (i in 1:6) {
+  breachers <- tapply(as.numeric(db$LOS[!is.na(db$LOS) & db$cat == catLevels[i]] < 241), 
+                     factor(db$date[!is.na(db$LOS) & db$cat == catLevels[i]],
+                            levels = levels(factor(db$date))), 
+                     mean)
+  ddb <- cbind(ddb, as.numeric(breachers))
+  names(ddb)[length(ddb)] <- paste("cat", catLevels[i], "compliance", sep = "")
+}
+
+```
+
+<br>
+---
+
+# Results {#Results}
+
+## Total episodes
+
+The following graph shows a comparison of the daily number of attendances in 2016 (pre-implementation) and 2017 (post-implementation):
+
+```{r totals, echo=TRUE, dev="svg"}
+
+ddb$prepost <- factor(ddb$prepost, levels = c("pre", "post"))
+
+fig1 <- qplot(data = ddb, x = day, y = total, colour = prepost
+              ) + geom_smooth(method = "loess"
+              ) + labs(x = "Day of study", y = "Count", colour = "Phase"
+              ) + ggtitle("Total patients seen per day"
+              )
+fig1
+```
+
+The underlying pattern is similar, as are the counts. In 2016 the median number of patients seen in this period was `r median(ddb$total[ddb$prepost=="pre"])` versus `r median(ddb$total[ddb$prepost=="post"])` in 2017, (p = `r signif(wilcox.test(ddb$total[ddb$prepost=="pre"],ddb$total[ddb$prepost=="post"])$p.value,3)`).
+
+## Changes in triage category
+
+There was, however, a large difference in the number of patients assigned to different triage categories. 
+
+```{r triagetable}
+
+mytab <- rbind(t(table(db$cat[!db$post] == 0)), t(table(db$cat[db$post] == 0)))
+  for (i in 1:5) {
+    mytab <- rbind(mytab, 
+             rbind(t(table(db$cat[!db$post] == i)),
+                   t(table(db$cat[db$post] == i))))
+    }
+    colnames(mytab) <- c("false", "true")
+    countdb <- as.data.frame(mytab)
+    rm(mytab)
+    countdb$total <- rep(as.numeric(table(db$post)), times = 6)
+    countdb$prepost <- factor(rep(c("pre", "post"), times = 6),
+                              levels = c("pre", "post"))
+countdb$cat <- as.factor(rep(0:5,each = 2))
+countdb <- cbind(countdb, 
+                  binom.confint(countdb$true, 
+                                countdb$total,
+                                method = "exact")[4:6])
+countdb[, 6:8] <- countdb[, 6:8] * 100 
+
+triageTable <- array(
+                        paste(round(countdb$mean, 2),
+                              "% (", 
+                              round(countdb$lower, 2), 
+                              " - ", 
+                              round(countdb$upper, 2), 
+                              "%)", 
+                              sep = ""), 
+                        dim = c(2,6))
+                  
+pvals <- numeric() 
+for (i in 0:5) {
+              pvals[i + 1] <- round(chisq.test(
+                countdb[(i*2 + 1):(i*2 + 2), 1:2]
+                )$p.val, 3)
+              }
+pvals <- as.character(pvals)
+pvals[which(pvals == "0")] <- "<0.001"
+triageTable <- rbind(as.character(0:5), triageTable, pvals)
+row.names(triageTable) <- c("Triage Category", 
+                           "Percent before change", 
+                           "Percent after change", 
+                           "p value")
+triageTable %>% displayTable()
+
+```
+
+As can be seen, there were significantly more patients in triage categories 4 and 5 after the changes were made, but significantly fewer in categories 0, 2 and 3. Only category 1 was left virtually unchanged. This is shown graphically in the plot below:
+
+```{r triagecountsplot , dev="svg"}
+
+fig2 <- ggplot(data = countdb, aes(x = cat, y = mean, fill = prepost)
+               ) + geom_col(position = "dodge"
+               ) + labs(x = "Triage category", y = "Percentage of attendances"
+               ) + ggtitle("Differences in triage categorisation")
+fig2
+```
+
+A comparison of the proportion of each day's attendances assigned to each category shown below to examine the trend over time. Here the 2016 data are in red and 2017 data are in blue.
+
+```{r catGraphs, echo=TRUE, dev="svg", out.width='900px', out.height='1080px', fig.width=10, fig.height=12.5}
+
+fig3a <- qplot(data = ddb, x = day, y = cat0Prop, colour = prepost, geom = "blank"
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = "loess", size = 1
+      ) + ggtitle("Cat 0"
+      ) + labs(x = "Day of study", y = "Proportion of total", colour = "Phase"
+      ) + theme(legend.position = "none")
+
+fig3b <- qplot(data = ddb, x = day, y = cat1Prop, colour = prepost, geom = "blank"
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = "loess", size = 1
+      ) + ggtitle("Cat 1"
+      ) + labs(x = "Day of study", y = "Proportion of total", colour = "Phase"
+      ) + theme(legend.position = "none")
+
+fig3c <- qplot(data = ddb, x = day, y = cat2Prop, colour = prepost, geom = "blank"
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = "loess", size = 1
+      ) + ggtitle("Cat 2"
+      ) + labs(x = "Day of study", y = "Proportion of total", colour = "Phase"
+      ) + theme(legend.position = "none")
+
+fig3d <- qplot(data = ddb, x = day, y = cat3Prop, colour = prepost, geom = "blank"
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = "loess", size = 1
+      ) + ggtitle("Cat 3"
+      ) + labs(x = "Day of study", y = "Proportion of total", colour = "Phase"
+      ) + theme(legend.position = "none")
+
+fig3e <- qplot(data = ddb, x = day, y = cat4Prop, colour = prepost, geom = "blank"
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = "loess", size = 1
+      ) + ggtitle("Cat 4"
+      ) + labs(x = "Day of study", y = "Proportion of total", colour = "Phase"
+      ) + theme(legend.position = "none")
+
+fig3f <- qplot(data = ddb, x = day, y = cat5Prop, colour = prepost, geom = "blank"
+      ) + geom_point(size = 1
+      ) + geom_smooth(method = "loess", size = 1
+      ) + ggtitle("Cat 5"
+      ) + labs(x = "Day of study", y = "Proportion of total", colour = "Phase"
+      ) + theme(legend.position = "none")
+
+
+grid.arrange(fig3a, fig3b, fig3c, fig3d, fig3e, fig3f, ncol = 2)
+
+
+```
+
+## Time to first assessment
+
+There was no overall difference in time to first assessment between the two samples; the median time to first assessment was `r median(db$ttfa[!db$post], na.rm=T)` minutes in 2016, and `r median(db$ttfa[db$post], na.rm=T)` minutes in 2017 after the triage changes were made (p = `r signif(wilcox.test(db$ttfa[db$post], db$ttfa[!db$post])$p.val, 3)` by Wilcox test).
+
+However, there were significant changes in time to first assessment within each triage category, as shown in the table below:
+
+```{r ttfatable}
+standardError <- function(x){
+  sqrt(var(x)/length(x))
+}
+
+meansWithCI <- function(x){
+    y <- na.omit(x)  
+    z <- mean(y)
+    z[2] <- z[1] + standardError(y) * qnorm(0.025)
+    z[3] <- z[1] + standardError(y) * qnorm(0.975)
+    z <- round(z, 1)
+    return(z)
+}
+
+meansWithCI.text <- function(x) {
+  z <- meansWithCI(x)
+  return(paste(z[1], " (95% CI ", z[2], " - ", z[3], ")", sep = ""))
+}
+
+meansWithCI.table <- function(x, y, label = "new.") {
+  Levels <- names(table(y))
+  resList <- tapply(x, y, meansWithCI)
+  newTab <- resList[[1]]
+  for (i in 2:length(Levels))  newTab <- rbind(newTab, resList[[i]])
+  colnames(newTab) <- paste(label, c("mean", "lower", "upper"), sep = "")
+  row.names(newTab) <- Levels
+  return(newTab)
+}
+
+Wilcoxp <- function(x, y, z) {
+  ss <- which(!is.na(x) & !is.na(y) & !is.na(z))
+  x <- x[ss]
+  y <- y[ss]
+  z <- z[ss]
+  groups <- names(table(y))
+  p <- numeric()
+  for (i in 1:length(groups)) { 
+    p[i] <- round(wilcox.test(x[y == groups[i] & z], 
+                               x[y == groups[i] & !z])$p.val,
+                   3)
+  }
+  p <- as.character(p)
+  p[which(p == "0")] <- "<0.001"
+  return(p)
+}
+
+ttfatab <- cbind(as.character(0:5),
+      as.vector(tapply(db$ttfa[!db$post], db$cat[!db$post], meansWithCI.text)),
+      as.vector(tapply(db$ttfa[db$post], db$cat[db$post], meansWithCI.text)),
+      Wilcoxp(db$ttfa, db$cat, db$post))
+
+colnames(ttfatab) <- c("Category", 
+                       "2016 mean time to assessment (minutes)", 
+                       "2017 mean time to assessment (minutes)",
+                       "p value (Wilcox test)") 
+
+ttfatab %>% t() %>% displayTable()
+      
+```
+
+The differences can be seen more clearly in the following chart:
+
+```{r ttfaplot, dev="svg"}
+newtab <- rbind(meansWithCI.table(db$ttfa[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = "ttfa."),
+                meansWithCI.table(db$ttfa[db$post], 
+                                  db$cat[db$post], 
+                                  label = "ttfa."))
+newtab <- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb <- cbind(countdb, newtab)
+rm(newtab)
+
+fig4 <- ggplot(data = countdb, aes(x = cat, y = ttfa.mean, fill = prepost)
+               ) + geom_col(position = "dodge"
+               ) + geom_errorbar(aes(ymin = ttfa.lower, ymax = ttfa.upper),
+                                 position = "dodge", size = 0.6
+               ) + labs(x = "Triage category", 
+                        y = "Mean time to first assessment"
+               ) + ggtitle("Time to first assessment"
+               )             
+fig4
+
+```
+
+## ED length of stay
+
+There was no overall difference in length of stay between the two samples either; the median length of stay was `r median(db$LOS[!db$post], na.rm=T)` minutes in 2016, and `r median(db$LOS[db$post], na.rm=T)` minutes in 2017 after the triage changes were made (p = `r signif(wilcox.test(db$LOS[db$post], db$LOS[!db$post])$p.val, 3)` by Wilcox test).
+
+There was, however, a significant change in length of stay within the triage categories, as shown below.
+
+```{r LOStable}
+lostab <- cbind(as.character(0:5),
+      as.vector(tapply(db$LOS[!db$post], db$cat[!db$post], meansWithCI.text)),
+      as.vector(tapply(db$LOS[db$post], db$cat[db$post], meansWithCI.text)),
+      Wilcoxp(db$LOS, db$cat, db$post))
+
+colnames(lostab) <- c("Category", 
+                       "2016 mean LOS (minutes)", 
+                       "2017 mean LOS (minutes)",
+                       "p value (Wilcox test)") 
+
+lostab %>% t() %>% displayTable()
+
+```
+
+This can be seen pictorially in the following chart:
+
+```{r LOSplot, dev="svg"}
+newtab <- rbind(meansWithCI.table(db$LOS[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = "los."),
+                meansWithCI.table(db$LOS[db$post], 
+                                  db$cat[db$post], 
+                                  label = "los."))
+newtab <- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb <- cbind(countdb, newtab)
+rm(newtab)
+
+fig5 <- ggplot(data = countdb, aes(x = cat, y = los.mean, fill = prepost)
+               ) + geom_col(position = "dodge"
+               ) + geom_errorbar(aes(ymin = los.lower, ymax = los.upper),
+                                 position = "dodge", size = 0.6
+               ) + labs(x = "Triage category", 
+                        y = "Mean length of stay"
+               ) + ggtitle("Length of stay"
+               )             
+fig5
+
+```
+
+## Four-hour compliance
+
+Despite the absence of a significant change in length of stay, there was a significant improvement in compliance with the four-hour target, with `r signif(100 * sum(db$breachers[!db$post])/length(which(!db$post)), 3)`% of patients in the 2016 period being discharged within 4 hours compared to `r signif(100 * sum(db$breachers[db$post])/length(which(db$post)), 3)`% in the 2017 period, p = `r if (chisq.test(table(db$post,db$breachers))$p.val < 0.001) {"0.001"} else{signif(chisq.test(table(db$post,db$breachers))$p.val,3)}`.
+
+The breakdown between triage groups can be seen in the following table:
+
+```{r breachtable}
+
+probWithCI <- function(x) { 
+  x <- na.omit(x)
+  signif(as.numeric(binom.confint(sum(x), length(x))[5,4:6]),3)
+}
+
+probWithCI.text <- function(x) {
+  z <- 100 * probWithCI(x)
+  return(paste(z[1], "% (95% CI ", z[2], " - ", z[3], ")", sep = ""))
+}
+
+probWithCI.table <- function(x, y, label = "new.") {
+  Levels <- names(table(y))
+  resList <- tapply(x, y, probWithCI)
+  newTab <- resList[[1]]
+  for (i in 2:length(Levels))  newTab <- rbind(newTab, resList[[i]])
+  colnames(newTab) <- paste(label, c("mean", "lower", "upper"), sep = "")
+  row.names(newTab) <- Levels
+  return(newTab)
+}
+
+propp <- function(x, y, z){
+  ss <- which(!is.na(x) & !is.na(y) & !is.na(z))
+  x <- x[ss]
+  y <- y[ss]
+  z <- z[ss]
+    groups <- names(table(y))
+  p <- numeric()
+  for (i in 1:length(groups)) { 
+    p[i] <- round(
+          prop.test(as.vector(table(x[y == groups[i]], z[y == groups[i]])[2,]),
+                as.vector(table(z[y == groups[i]])))$p.val,
+                   3)
+  }
+  p <- as.character(p)
+  p[which(p == "0")] <- "<0.001"
+  return(p)
+}
+ 
+breachtab <- cbind(as.character(0:5),
+      as.vector(tapply(db$breachers[!db$post], db$cat[!db$post], probWithCI.text)),
+      as.vector(tapply(db$breachers[db$post], db$cat[db$post], probWithCI.text)),
+      suppressWarnings(propp(db$breachers, db$cat, db$post)))
+
+colnames(breachtab) <- c("Category", 
+                       "2016 compliance", 
+                       "2017 compliance",
+                       "p value (Chi square)") 
+
+breachtab %>% t() %>% displayTable()
+```
+
+Again, this can be seen more clearly in graphical format
+
+```{r breachplot, dev="svg"}
+newtab <- rbind(probWithCI.table(db$breachers[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = "breach."),
+                probWithCI.table(db$breachers[db$post], 
+                                  db$cat[db$post], 
+                                  label = "breach."))
+newtab <- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb <- cbind(countdb, newtab)
+rm(newtab)
+
+fig6 <- ggplot(data = countdb, aes(x = cat, y = breach.mean, fill = prepost)
+               ) + geom_col(position = "dodge"
+               ) + geom_errorbar(aes(ymin = breach.lower, ymax = breach.upper),
+                                 position = "dodge", size = 0.6
+               ) + labs(x = "Triage category", 
+                        y = "Proportion seen in 4 hours"
+               ) + ggtitle("4-hour compliance"
+               )             
+fig6
+
+```
+
+## Admissions
+
+Another important difference in the two time periods was the rate of hospital admissions. These fell significantly, from `r as.vector(signif(100 * tapply(db$admitted,db$post,function(x) mean(x, na.rm=T)), 3)[1])`% in 2016 to `r as.vector(signif(100 * tapply(db$admitted,db$post,function(x) mean(x, na.rm=T)), 3)[2])`% in 2017.
+
+Paradoxically, despite the overall fall in admissions, there appears to be an increase in admission rate across the triage categories. This is explained by the large change in percentage of patients from category 3 to category 4, demonstrating the statistical phenomenon of *Simpson's paradox* [@Wagner1982]. The details are shown below:
+
+```{r admittab}
+admittab <- cbind(as.character(0:5),
+      as.vector(tapply(db$admitted[!db$post], db$cat[!db$post], probWithCI.text)),
+      as.vector(tapply(db$admitted[db$post], db$cat[db$post], probWithCI.text)),
+      suppressWarnings(propp(db$admitted, db$cat, db$post)))
+
+colnames(admittab) <- c("Category", 
+                       "2016 admissions", 
+                       "2017 admissions",
+                       "p value (Chi square)") 
+
+admittab %>% t() %>% displayTable()
+```
+
+And graphically here.
+
+```{r admitplot, dev="svg"}
+newtab <- rbind(probWithCI.table(db$admitted[!db$post], 
+                                  db$cat[!db$post], 
+                                  label = "admit."),
+                probWithCI.table(db$admitted[db$post], 
+                                  db$cat[db$post], 
+                                  label = "admit."))
+newtab <- newtab[rep(1:6, each = 2) + rep(c(0,6), 6),]
+countdb <- cbind(countdb, newtab)
+rm(newtab)
+
+fig7 <- ggplot(data = countdb, aes(x = cat, y = admit.mean, fill = prepost)
+               ) + geom_col(position = "dodge"
+               ) + geom_errorbar(aes(ymin = admit.lower, ymax = admit.upper),
+                                 position = "dodge", size = 0.6
+               ) + labs(x = "Triage category", 
+                        y = "Proportion admitted"
+               ) + ggtitle("Admissions"
+               )             
+fig7
+
+```
+
+<br>
+
+---
+
+# Conclusion
+
+There are some unusual findings in this analysis. Although time to first assessment and overall length of stay did not change year-on-year, there was a significant improvement in the four-hour target. This suggests a reduced variance in length of stay; indeed, the standard deviation of length of stay in 2016 was `r as.vector(signif(tapply(db$LOS, db$post, function(x) sd(x, na.rm=T)),3)[1])` minutes, compared to `r as.vector(signif(tapply(db$LOS, db$post, function(x) sd(x, na.rm=T)),3)[2])` minutes in 2017.
+
+The difference in compliance is largely driven by an improvement in compliance rates for category 1, 2 and 3 patients. The significant increase in the number of patients assigned to category 4, and their somewhat lower compliance figures were not sufficient to counterbalance this improvement.
+
+The reduction in admission rate is a striking finding, and despite admission rates for category 3 and category 4 patients both rising, the large change in ratio of patients assigned to these categories meant that overall the admission rate fell - an instance of Simpson's paradox.
+
+These findings cannot in themselves show causation. There may well have been differences in patient demographics, hospital bed capacity, staffing, etc that had an effect. Nevertheless, the metrics for the ED seemed to improve between the two periods, and the difference in triage methods is the obvious change that occurred between them.
+
+---
+
+# References
+ 

@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Allan Cameron, Kenneth Rodgers, Alastair Ireland, Ravi Jamdar, Gerard A McKay" />
+
+<meta name="date" content="2014-01-13" />
+
+<title>A simple tool to predict admission at the time of triage</title>
+
+<script src="source_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="source_files/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="source_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="source_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="source_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="source_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="source_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="source_files/navigation-1.1/tabsets.js"></script>
+<link href="source_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="source_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">A simple tool to predict admission at the time of triage</h1>
+<h4 class="author"><em>Allan Cameron, Kenneth Rodgers, Alastair Ireland, Ravi Jamdar, Gerard A McKay</em></h4>
+<h4 class="date"><em>13 January 2014</em></h4>
+
+</div>
+
+
+<div id="abstract" class="section level1">
+<h1>Abstract</h1>
+<div id="aim" class="section level2">
+<h2>Aim</h2>
+<p>To create and validate a simple clinical score to estimate the probability of admission at the time of triage.</p>
+</div>
+<div id="methods" class="section level2">
+<h2>Methods</h2>
+<p>This was a multicentre, retrospective, cross-sectional study of triage records for all unscheduled adult attendances in North Glasgow over 2 years. Clinical variables that had significant associations with admission on logistic regression were entered into a mixed-effects multiple logistic model. This provided weightings for the score, which was then simplified and tested on a separate validation group by receiving operator characteristic (ROC) analysis and goodness-of-fit tests.</p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>215,231 presentations were used for model derivation and 107,615 for validation. Variables in the final model showing clinically and statistically significant associations with admission were: triage category, age, National Early Warning Score (NEWS), arrival by ambulance, referral source and admission within the last year. The resulting 6-variable score showed excellent admission/discharge discrimination (area under ROC curve 0.8774, 95% CI 0.8752 to 0.8796). Higher scores also predicted early returns for those who were discharged: the odds of subsequent admission within 28 days doubled for every 7-point increase (log odds=+0.0933 per point, p&lt;0.0001).</p>
+</div>
+<div id="conclusions" class="section level2">
+<h2>Conclusions</h2>
+<p>This simple, 6-variable score accurately estimates the probability of admission purely from triage information. Most patients could accurately be assigned to ‘admission likely’, ‘admission unlikely’, ‘admission very unlikely’ etc., by setting appropriate cut-offs. This could have uses in patient streaming, bed management and decision support. It also has the potential to control for demographics when comparing performance over time or between departments.</p>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="what-this-paper-adds" class="section level1">
+<h1>What this paper adds</h1>
+<div id="what-is-already-known-on-this-subject" class="section level2">
+<h2>What is already known on this subject?</h2>
+<p>Unscheduled admissions to hospitals are rising with increasing costs. Clinical judgement and various routine measurements such as NEWS scoring at the point of triage have been used to try to predict admission, but none to date has the utility to be adopted universally in a clinically meaningful way.</p>
+</div>
+<div id="what-this-study-adds" class="section level2">
+<h2>What this study adds</h2>
+<p>This study used routine collected data at triage for more than 500,000 emergency and urgent presentations over a two year period to hospitals in a large city to establish an admission prediction score and to validate it. The outcome, a simple 6 point score which accurately estimates the probability of admission from triage information may be applied to help improve patient pathways, prevent re-admissions and reduce costs.</p>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Unscheduled admissions to Scottish hospitals increased by 13.2% between 2005 and 2012, with an increase of 12.2% in England over the same period.<span class="citation">[1,2]</span> Emergency department (ED) attendances have grown more rapidly, with English EDs seeing 19.9% more patients in 2011 than they did in 2005, a pattern observed elsewhere in the developed world. <span class="citation">[3,4]</span></p>
+<p>Rising ED attendances lead to higher costs, overcrowding and longer waiting times.<span class="citation">[1,5]</span> Longer waits expose patients to worse outcomes, decreased satisfaction, and a higher chance of leaving before their treatment is complete.<span class="citation">[5,6]</span> Without increases in staffing and facilities, the only way to protect waiting times is to optimise the use of existing resources.<span class="citation">[7]</span> An accurate early prediction of whether patients attending the ED will require admission could promote efficiency in several ways, for example by allowing specialised work streams, facilitating decision support and assisting bed planning.<span class="citation">[7–12]</span></p>
+<p>Triage is usually the first clinical assessment that a patient has after arrival to the ED, but several studies conclude that triage personnel are unable to accurately predict admission using clinical judgement alone.<span class="citation">[13–16]</span> More objective methods of predicting admission at triage or in the prehospital setting have been described using variables such as age, triage category and physiological early warning scores to estimate the probability of admission.<span class="citation">[13–21]</span> Some of these methods are more accurate than clinical judgement alone, but none has been widely adopted, perhaps because the simpler tools are not accurate enough to be clinically useful, and others are too complex for routine use.</p>
+<p>As well as its potential for improving efficiency, an admission prediction tool built on routine clinical data could have other uses. The case mix of patients presenting to EDs varies according to geographical location and time of year, and this makes it difficult to compare the practice of different units, or even to monitor the performance of a single unit over time. A reproducible measure of the probability that a patient will be admitted could control for differences in case mix. It could also help to provide a causal explanation for differences or changes in admission rates.</p>
+<p>The aim of this study was, therefore, to create and validate a simple, objective, accurate and widely applicable clinical tool to estimate the probability of admission from the data already recorded in reception and triage.</p>
+<p><br></p>
+</div>
+<div id="methods-1" class="section level1">
+<h1>Methods</h1>
+<div id="study-aim-and-design" class="section level2">
+<h2>Study aim and design</h2>
+<p>This was a multicentre, retrospective, cross-sectional study of routinely collected clinical data.</p>
+</div>
+<div id="setting-and-participants" class="section level2">
+<h2>Setting and participants</h2>
+<p>All unscheduled adult attendances to hospitals in North Glasgow during the 2-year period from 21 March 2010 to 20 March 2012 were included. The period 21 March 2009 to 20 March 2010 was analysed to create an attendance history for patients presenting during the main study period. Data were collected from six individual units in three different hospitals comprising six unscheduled care centres which, between them, saw all unscheduled attendances in the area. These comprised three EDs, two medical Acute Assessment Units, and one Minor Injuries Unit. These units all used the same computer system to record routine data (Emergency Department Information System, iSoft, Sydney, Australia).</p>
+</div>
+<div id="variables" class="section level2">
+<h2>Variables</h2>
+<div id="response-variable" class="section level3">
+<h3>Response variable</h3>
+<p>Each attendance was categorised according to the eventual clinical decision made to admit or discharge. For this reason, patients who left before a decision could be made were excluded rather than being counted as discharges. Deaths in the department were counted as admissions, because it was inferred that the patients were so ill that a decision would have been made to admit them should they have survived.</p>
+</div>
+<div id="predictor-variables" class="section level3">
+<h3>Predictor variables</h3>
+<p>All variables recorded in reception and triage that had a potential correlation to admission were considered (see table 1). Physiological observations were combined using a common, validated, numerical prognostic marker: the NHS National Early Warning Score (NEWS).<span class="citation">[22]</span> The units all used the Manchester triaging system (MTS), and this was included in the model.<span class="citation">[8]</span> However, some units additionally used a ‘3+’ category for patients who were deemed most urgent among category 3 patients, but did not meet category 2 criteria.</p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:characteristics">Table 1: </span>Results of univariate analysis
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+Factor level
+</th>
+<th style="text-align:left;">
+Raw odds
+</th>
+<th style="text-align:left;">
+OR
+</th>
+<th style="text-align:left;">
+95% Lower
+</th>
+<th style="text-align:left;">
+95% Upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Sex
+</td>
+<td style="text-align:left;">
+Male
+</td>
+<td style="text-align:left;">
+0.559
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.552
+</td>
+<td style="text-align:left;">
+0.566
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Female
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1.224
+</td>
+<td style="text-align:left;">
+1.202
+</td>
+<td style="text-align:left;">
+1.245
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Transport*
+</td>
+<td style="text-align:left;">
+Private transport
+</td>
+<td style="text-align:left;">
+0.335
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.328
+</td>
+<td style="text-align:left;">
+0.342
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Police
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.91
+</td>
+<td style="text-align:left;">
+0.832
+</td>
+<td style="text-align:left;">
+0.995
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Walking
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.912
+</td>
+<td style="text-align:left;">
+0.888
+</td>
+<td style="text-align:left;">
+0.936
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+3.942
+</td>
+<td style="text-align:left;">
+3.441
+</td>
+<td style="text-align:left;">
+4.516
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+25.038
+</td>
+<td style="text-align:left;">
+20.695
+</td>
+<td style="text-align:left;">
+30.291
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Ambulance
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+6.212
+</td>
+<td style="text-align:left;">
+6.049
+</td>
+<td style="text-align:left;">
+6.381
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Time
+</td>
+<td style="text-align:left;">
+Weekend
+</td>
+<td style="text-align:left;">
+0.451
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.44
+</td>
+<td style="text-align:left;">
+0.463
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Office hours
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1.364
+</td>
+<td style="text-align:left;">
+1.325
+</td>
+<td style="text-align:left;">
+1.404
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Evening and night-time
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1.493
+</td>
+<td style="text-align:left;">
+1.451
+</td>
+<td style="text-align:left;">
+1.536
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Referral source*
+</td>
+<td style="text-align:left;">
+Self presentation
+</td>
+<td style="text-align:left;">
+0.425
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.421
+</td>
+<td style="text-align:left;">
+0.43
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Other department
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+3.474
+</td>
+<td style="text-align:left;">
+3.278
+</td>
+<td style="text-align:left;">
+3.683
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+GP referral
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+5.663
+</td>
+<td style="text-align:left;">
+5.53
+</td>
+<td style="text-align:left;">
+5.799
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Triage category*
+</td>
+<td style="text-align:left;">
+Less acute than category 3
+</td>
+<td style="text-align:left;">
+0.124
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.122
+</td>
+<td style="text-align:left;">
+0.127
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Category 3
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+7.172
+</td>
+<td style="text-align:left;">
+6.993
+</td>
+<td style="text-align:left;">
+7.354
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Category 3+
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+17.342
+</td>
+<td style="text-align:left;">
+16.525
+</td>
+<td style="text-align:left;">
+18.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Category 2
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+21.808
+</td>
+<td style="text-align:left;">
+21.094
+</td>
+<td style="text-align:left;">
+22.547
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Category 1
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+137.908
+</td>
+<td style="text-align:left;">
+121.815
+</td>
+<td style="text-align:left;">
+156.127
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Age*
+</td>
+<td style="text-align:left;">
+Teens
+</td>
+<td style="text-align:left;">
+0.188
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.18
+</td>
+<td style="text-align:left;">
+0.197
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+20s
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1.277
+</td>
+<td style="text-align:left;">
+1.214
+</td>
+<td style="text-align:left;">
+1.343
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+30s
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1.877
+</td>
+<td style="text-align:left;">
+1.783
+</td>
+<td style="text-align:left;">
+1.976
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+40s
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+2.631
+</td>
+<td style="text-align:left;">
+2.502
+</td>
+<td style="text-align:left;">
+2.766
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+50s
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+3.567
+</td>
+<td style="text-align:left;">
+3.39
+</td>
+<td style="text-align:left;">
+3.753
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+60s
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+5.969
+</td>
+<td style="text-align:left;">
+5.666
+</td>
+<td style="text-align:left;">
+6.288
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+70s
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+9.935
+</td>
+<td style="text-align:left;">
+9.427
+</td>
+<td style="text-align:left;">
+10.471
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+80s
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+14.599
+</td>
+<td style="text-align:left;">
+13.798
+</td>
+<td style="text-align:left;">
+15.446
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+90s or older
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+17.722
+</td>
+<td style="text-align:left;">
+16.223
+</td>
+<td style="text-align:left;">
+19.359
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NEWS*
+</td>
+<td style="text-align:left;">
+NEWS 0
+</td>
+<td style="text-align:left;">
+0.392
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.388
+</td>
+<td style="text-align:left;">
+0.396
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 1
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+2.406
+</td>
+<td style="text-align:left;">
+2.359
+</td>
+<td style="text-align:left;">
+2.454
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 2
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+3.319
+</td>
+<td style="text-align:left;">
+3.232
+</td>
+<td style="text-align:left;">
+3.408
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 3
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+4.639
+</td>
+<td style="text-align:left;">
+4.483
+</td>
+<td style="text-align:left;">
+4.801
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 4
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+6.669
+</td>
+<td style="text-align:left;">
+6.349
+</td>
+<td style="text-align:left;">
+7.005
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 5
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+9.867
+</td>
+<td style="text-align:left;">
+9.176
+</td>
+<td style="text-align:left;">
+10.61
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 6
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+12.019
+</td>
+<td style="text-align:left;">
+10.881
+</td>
+<td style="text-align:left;">
+13.276
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 7
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+16.956
+</td>
+<td style="text-align:left;">
+14.536
+</td>
+<td style="text-align:left;">
+19.78
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 8
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+20.888
+</td>
+<td style="text-align:left;">
+16.672
+</td>
+<td style="text-align:left;">
+26.168
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 9
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+68.482
+</td>
+<td style="text-align:left;">
+39.376
+</td>
+<td style="text-align:left;">
+119.104
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+NEWS 10 or more
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+59.692
+</td>
+<td style="text-align:left;">
+31.701
+</td>
+<td style="text-align:left;">
+112.395
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Lives alone
+</td>
+<td style="text-align:left;">
+No
+</td>
+<td style="text-align:left;">
+0.535
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1.822
+</td>
+<td style="text-align:left;">
+0.157
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Yes
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1.334
+</td>
+<td style="text-align:left;">
+0.759
+</td>
+<td style="text-align:left;">
+2.345
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Previous admissions*
+</td>
+<td style="text-align:left;">
+No recent admissions
+</td>
+<td style="text-align:left;">
+0.443
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.438
+</td>
+<td style="text-align:left;">
+0.449
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Attended but not admitted
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+0.95
+</td>
+<td style="text-align:left;">
+0.929
+</td>
+<td style="text-align:left;">
+0.971
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Admitted within 1 day
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+7.007
+</td>
+<td style="text-align:left;">
+6.497
+</td>
+<td style="text-align:left;">
+7.556
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Admitted within 1 week
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+4.434
+</td>
+<td style="text-align:left;">
+4.114
+</td>
+<td style="text-align:left;">
+4.779
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Admitted within 1 month
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+6.725
+</td>
+<td style="text-align:left;">
+6.398
+</td>
+<td style="text-align:left;">
+7.068
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Admitted within 6 months
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+5.09
+</td>
+<td style="text-align:left;">
+4.925
+</td>
+<td style="text-align:left;">
+5.261
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+Admitted within 1 year
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+3.453
+</td>
+<td style="text-align:left;">
+3.303
+</td>
+<td style="text-align:left;">
+3.609
+</td>
+</tr>
+</tbody>
+</table>
+<p>Specific presenting complaints were not used as variables to avoid the need for patients to answer a long list of questions, which would slow down the triage process.8</p>
+</div>
+</div>
+<div id="treatment-of-missing-data-and-sources-of-bias" class="section level2">
+<h2>Treatment of missing data and sources of bias</h2>
+<p>Data were extracted from a large database, and there were inevitably some data entry errors, duplications and omissions. All duplicate cases were identified and removed. Missing fields were, if possible, inferred from other data (eg, if sex was not recorded but the patient’s name was Mary, female gender was assumed).</p>
+<p>If missing data could not be inferred, the attendance was excluded from further analysis. Exceptions to this were made where the data were clearly missing for reasons that would also strongly affect the probability of admission. For example the sickest patients, with the highest probability of admission, sometimes bypassed triage altogether to go straight to the resuscitation room, and therefore their initial observations, though recorded, were not transcribed to the electronic triage records. In these cases, imputation of missing fields from matched cases was used to minimise bias.<span class="citation">[23]</span> A summary of the treatment of missing data is given in table 2.</p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:missing">Table 2: </span>Handling of missing data
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Object
+</th>
+<th style="text-align:left;">
+Count
+</th>
+<th style="text-align:left;">
+Action
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Total cases
+</td>
+<td style="text-align:left;">
+585 396
+</td>
+<td style="text-align:left;">
+Separated as below
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Duplicate episodes
+</td>
+<td style="text-align:left;">
+32 829
+</td>
+<td style="text-align:left;">
+Excluded
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+First year attendances
+</td>
+<td style="text-align:left;">
+182 184
+</td>
+<td style="text-align:left;">
+Not part of main analysis
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Children or unknown age
+</td>
+<td style="text-align:left;">
+25 954
+</td>
+<td style="text-align:left;">
+Not part of main analysis
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Missing sex
+</td>
+<td style="text-align:left;">
+1038
+</td>
+<td style="text-align:left;">
+Imputed by inferring sex from name
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Missing triage category
+</td>
+<td style="text-align:left;">
+74 977
+</td>
+<td style="text-align:left;">
+Imputed by logical rules
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Missing NEWS in triage category 1
+</td>
+<td style="text-align:left;">
+6975
+</td>
+<td style="text-align:left;">
+Imputed by sampling matched cases
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Died
+</td>
+<td style="text-align:left;">
+560
+</td>
+<td style="text-align:left;">
+Counted as admissions
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Unknown outcome
+</td>
+<td style="text-align:left;">
+1616
+</td>
+<td style="text-align:left;">
+Excluded (missing completely at random)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Irregular discharge
+</td>
+<td style="text-align:left;">
+14 151
+</td>
+<td style="text-align:left;">
+Excluded
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Transfers
+</td>
+<td style="text-align:left;">
+5816
+</td>
+<td style="text-align:left;">
+Removed to avoid double counts
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="statistical-analysis" class="section level2">
+<h2>Statistical analysis</h2>
+<p>All statistical analyses were carried out in the R statistical programming language, V.2.13.1.<span class="citation">[24]</span> The attendances were randomly assigned to two subgroups, with two-thirds being used for model derivation and one-third for validation.</p>
+<p>The ability of each of the variables to predict admission was assessed using logistic regression. To ensure high statistical and clinical significance, only variables considered for further analysis were those with an OR of greater than 2 and a p value of &lt;0.001.</p>
+<p>These variables were entered into a multiple logistic regression analysis with stepwise deletion, using a mixed effects model to account for patients who had multiple attendances.18 The final score was then created by transforming the regression coefficients using normalisation and rounding.</p>
+<p>The use of the score in predicting admission was tested by applying it to the validation sample, and analysing the resulting receiving operator characteristic (ROC) curve with a bootstrapping method using 10,000 replicates to calculate 95% CIs.<span class="citation">[25]</span> The proportion admitted in the validation sample at each score point was compared to that in the derivation sample using <span class="math inline">\(\chi^2\)</span> tests.</p>
+<div id="probability-of-reattendance" class="section level3">
+<h3>Probability of reattendance</h3>
+<p>All patients retained in the validation group who had been discharged following their attendance were included in the secondary analysis. Their score was used as a predictor variable in a logistic regression analysis against the outcome of admission to hospital within 28 days.</p>
+</div>
+</div>
+</div>
+<div id="results-1" class="section level1">
+<h1>Results</h1>
+<div id="dataset" class="section level2">
+<h2>Dataset</h2>
+<p>Totally, 585,396 attendances were recorded during the 3-year period. After excluding the first year (used for attendance histories only), duplicate entries, patients under 16 years of age, cases with randomly missing data, and transfers between units, there were 322,846 attendances in 191,653 unique patients available for analysis. This represents an average of 1.68 attendances per patient over 2 years. Attendances were randomised to 215,231 for model derivation and 107,615 for validation.</p>
+</div>
+<div id="derivation-of-score" class="section level2">
+<h2>Derivation of score</h2>
+<p>The results of the univariate analyses are shown in table 1. For each variable, the value associated with the lowest rate of admission was taken as the baseline value. The raw odds of admission are shown for the baseline value, and admission rates for other values of the same variable are given as an OR.</p>
+<p>Statistically and clinically significant associations with the rate of admission were seen with triage category, increasing age, increasing NEWS score, transport by ambulance, referral by another healthcare professional, and previous admissions. These factors were all entered into the multivariate analysis.</p>
+<p>Attendances on weekdays or in the out-of-hours period were more likely to produce admissions than presentations at weekends, but the OR was less than 1.5. Women were significantly more likely to be admitted than men, but again the effect size was small, with an OR of 1.2. These factors were, therefore, not included in the multivariate analysis.</p>
+<p>The results of the multivariate analysis are shown in table 3. The factors entered into the model all retained statistical significance and a clinically important effect size. The coefficients of this model were used to create the final score (table 4).</p>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:multivariate">Table 3: </span>Multivariate model
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Coefficient
+</th>
+<th style="text-align:left;">
+OR (95% CI)
+</th>
+<th style="text-align:left;">
+Coefficient
+</th>
+<th style="text-align:left;">
+Rounded normalised coefficient
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Baseline odds
+</td>
+<td style="text-align:left;">
+0.023 (0.022 to 0.024)
+</td>
+<td style="text-align:left;">
+-3.767
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Per decade
+</td>
+<td style="text-align:left;">
+1.261 (1.253 to 1.269)
+</td>
+<td style="text-align:left;">
+0.232
+</td>
+<td style="text-align:left;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Per NEWS
+</td>
+<td style="text-align:left;">
+1.174 (1.162 to 1.185)
+</td>
+<td style="text-align:left;">
+0.160
+</td>
+<td style="text-align:left;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Triage category 3
+</td>
+<td style="text-align:left;">
+3.917 (3.796 to 4.042)
+</td>
+<td style="text-align:left;">
+1.365
+</td>
+<td style="text-align:left;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Triage category 2 or 3+
+</td>
+<td style="text-align:left;">
+9.689 (9.318 to 10.075)
+</td>
+<td style="text-align:left;">
+2.271
+</td>
+<td style="text-align:left;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Triage category 1
+</td>
+<td style="text-align:left;">
+48.744 (42.401 to 56.035)
+</td>
+<td style="text-align:left;">
+3.887
+</td>
+<td style="text-align:left;">
+20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Referred
+</td>
+<td style="text-align:left;">
+5.086 (4.94 to 5.236)
+</td>
+<td style="text-align:left;">
+1.627
+</td>
+<td style="text-align:left;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Arrived in ambulance
+</td>
+<td style="text-align:left;">
+2.76 (2.686 to 2.836)
+</td>
+<td style="text-align:left;">
+1.015
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Admission in last 12 months
+</td>
+<td style="text-align:left;">
+2.412 (2.341 to 2.485)
+</td>
+<td style="text-align:left;">
+0.880
+</td>
+<td style="text-align:left;">
+4
+</td>
+</tr>
+</tbody>
+</table>
+<table class="table table-hover" style="width: auto !important; ">
+<caption>
+<span id="tab:GAPStable">Table 4: </span>Admission prediction score
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Points
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Age
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1 point per decade
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+National Early Warning Score (NEWS)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+1 point per point on NEWS
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Triage category
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border:0px;">
+</td>
+<td style="text-align:left;border:0px;">
+2
+</td>
+<td style="text-align:left;border:0px;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border:0px;">
+</td>
+<td style="text-align:left;border:0px;">
+1
+</td>
+<td style="text-align:left;border:0px;">
+20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Referred by GP
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Arrived by ambulance
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Admitted within last twelve months
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="performance-of-score-in-predicting-admission" class="section level2">
+<h2>Performance of score in predicting admission</h2>
+<p>The area under the curve (AUC) of the ROC curve for the raw model tested on the derivation data was excellent, at 0.8778 (95% CI 0.8764 to 0.8793). Despite being rounded for simplicity, the derived score had an AUC that was not significantly smaller, at 0.8776 (95% CI 0.8762 to 0.8791).</p>
+<p>The validation dataset gave similar results, with an AUC of 0.8774 (95% CI 0.8752 to 0.8796) for the derived score. To emulate real-world use, the ROC of the validation sample was also calculated without the cases where random imputation had been employed, and this had only a slightly smaller AUC, at 0.8723 (95% CI 0.8702 to 0.8745).</p>
+<p>The goodness-of-fit tests showed no significant difference in admission rates for each of the score levels between the derivation and validation groups (p=0.524), suggesting a good fit of the empirical model to the data.</p>
+<p>The graph of probability of admission for each score is shown in figure 1.</p>
+<p><br></p>
+<div class="figure"><span id="fig:admitfig"></span>
+<img src="source_files/figure-html/GAPSfig1.jpg" alt="Probability of admission at each score point" width="640" />
+<p class="caption">
+Figure 1: Probability of admission at each score point
+</p>
+</div>
+</div>
+<div id="the-score-as-a-binary-predictor" class="section level2">
+<h2>The score as a binary predictor</h2>
+<p>When used as a binary predictor of admission, the optimum cut-off of greater than 15 points correctly predicted the outcome of 80.3% of patients (95% CI 80.2 to 80.4%). This represents a 78.0% sensitivity (95% CI 77.8 to 78.2%) and 81.7% specificity (95% CI 81.6 to 81.9%) for predicting admission. The positive predictive value was 72.5% (95% CI 72.3 to 72.7%) and negative predictive value was 85.7% (95% CI 85.6 to 85.8%).</p>
+<p>However, the score is unlikely to be at its most useful as a simple binary predictor. Defining high probability or low probability groups might be more clinically helpful. A ‘high probability’ score of &gt;25 would allow over one-third of admissions to be identified immediately, at a cost of mislabelling less than 3% of discharges inappropriately. A score of less than 8 would allow over half of all discharges to be identified in advance, with less than 5% of admissions wrongly streamed to this group.</p>
+<p>The usefulness of these specific examples might vary according to local demographics and workflows, so deciding on didactic cut-offs was purposefully avoided to prevent limiting the score’s wider applicability.</p>
+</div>
+<div id="performance-of-score-in-predicting-reattendance-and-admission" class="section level2">
+<h2>Performance of score in predicting reattendance and admission</h2>
+<p>A plot of the scores of all patients discharged from the ED against their proportion admitted to hospital in the next 28 days shows a linear relationship (see figure 2). The positive relationship was confirmed by logistic regression analysis, with a 0.0933 increase in log odds of admission (p&lt;0.0001) per point on the score confirming that patients with higher scores are more likely to be admitted to hospital, and if they are discharged they are more likely to subsequently return to hospital and be admitted.</p>
+<div class="figure"><span id="fig:returnfig"></span>
+<img src="source_files/figure-html/GAPSfig2.jpg" alt="Probability of being admitted to hospital within 28 days if discharged from ED" width="640" />
+<p class="caption">
+Figure 2: Probability of being admitted to hospital within 28 days if discharged from ED
+</p>
+</div>
+<p>To put this in context, the odds of a patient who is discharged with a score of zero being readmitted within 28 days is 80:1, but for every 7-point increase, the odds double, so that they are 40:1 with a score of seven, 20:1 with a score of 14, and 10:1 with a score of 21. At scores of 45 and over, the patient is more likely than not to require admission within 28 days. Such information may be useful to clinicians in supporting or challenging discharge decisions.</p>
+</div>
+</div>
+<div id="discussion" class="section level1">
+<h1>Discussion</h1>
+<p>This simple objective admission prediction tool with six variables can be used to accurately estimate the probability of admission at the point of triage. In comparison, other prediction tools, such as the King’s Fund Combined Predictive Model, have required the institution of bespoke computer programmes, with associated costs in terms of software, skills and training.<span class="citation">[26]</span> Other scores depend on information that would not be available until some time after presentation.<span class="citation">[9,27]</span></p>
+<p>Predicting admission at the time of triage could have several uses. The most obvious is in simple binary prediction, to give an idea of the likely outcome of an attendance to the patient and to staff. In this role, the score appears to have much higher sensitivity, specificity and positive predictive value than has been shown with experienced clinical triaging staffs’ intuitive predictions.<span class="citation">[13–16]</span> This is not a problem specific to triage; simple scores often outperform expert intuition when there are many (possibly irrelevant) correlated variables to consider, and when the intuition deals with the prediction of future events.<span class="citation">[28]</span> Simple scores perform better in these situations because they consistently apply the same rules, ignore irrelevant details, and are derived from outcome data.</p>
+<p>However, using probabilities of admission generated by the score rather than a binary outcome, could have wider and more subtle uses. For example, it would be possible to direct patients in real time to different work-streams, such as ‘fast-track admission’, ‘rapid discharge’ or ‘senior review’ with any desired degree of accuracy. Work streams of this type have been shown to reduce waiting times, admission rates and inappropriate discharges.<span class="citation">[7,9–12]</span></p>
+<p>It has been shown that senior review reduces total admission rates by 11.9%, medical admission rates by 21.2% and inappropriate discharges by 9.4%.11 There is an opportunity to optimise outcomes by targeting senior clinical review at those patients whose admission/discharge decision is most difficult, and these are likely to be patients with intermediate scores.</p>
+<p>Since the score is based on historical admission and discharge decisions the score could also act as a ‘sense check’ for junior staff, telling them how patients with similar presentations are typically dealt with by their peers. The value of the score in decision support should not be underestimated, because it predicts who is likely to be admitted, and also how likely it is that a patient will reattend and require hospital admission in the following 28 days if discharged. If the clinical decision is contrary to the norm for a particular score, this could generate a senior review. The score may, therefore, have some use in avoiding unnecessary admissions and reducing the likelihood of failed discharges.</p>
+<p>A reliable predictor of admission could have uses other than the direct improvement in efficiency. Communicating the likely outcome to patients and their relatives at an early stage could increase patient satisfaction.<span class="citation">[29]</span> Furthermore, if all the patients in a department who had not yet been seen by medical staff had an estimated probability of admission made in triage, then bed managers and receiving ward staff could use this information to aid planning of patient movement, bed allocations, staff allocation and catering. This could, in turn, improve resource allocation and reduce waiting times.<span class="citation">[30]</span></p>
+<p>Outside of ‘real-time’ clinical use, an admission prediction score could be used as a method of controlling for demographics, illness severity, past history, transport considerations and referral source when measuring the propensity of different units (or a single unit over time) to admit or discharge patients, allowing fairer comparisons and controlled evaluations of service innovations.<span class="citation">[31,32]</span></p>
+<p>The main limitation to this study was that although it used data from different units, the hospitals were all in the same geographic region. They will therefore share similar working practices, data recording methods, tertiary referral services and patient demographics. As this was an observational study, it is possible that there are unmeasured systematic biases that are particular to the region, and there is, therefore, no guarantee that the score’s accuracy will hold elsewhere. However, there is no prior reason to think that local practices or facilities differ substantially from elsewhere in the UK, and demographic effects are largely incorporated in the score itself. It is therefore reasonable to assume that the score would be broadly applicable, at least within the UK. Another limitation is that although the NEWS and the Manchester triage system are widely used in the UK, their inclusion would limit the score’s use internationally.</p>
+<p>In conclusion, this simple score accurately predicts the probability of admission and reattendance, and has the potential to improve patient flow and efficiency in EDs and assessment units, while also facilitating analysis of trends in admissions within and between units. Further work is needed to show that it significantly outperforms triage nurses’ predictions in a direct comparison, and to demonstrate the extent to which incorporation of the tool into clinical practice actually improves care or use of resources.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-ISD2013">
+<p> <a href="http://www.isdscotland.org/Health-Topics/Hospital-Care/Inpatient-and-Day-Case-Activity/">1 Information Services Division, NHS National Services Scotland. Inpatient and Day Case Activity. Information Services Division, NHS National Services Scotland 2013. </a></p>
+</div>
+<div id="ref-NHSIS2012">
+<p><a href="https://digital.nhs.uk/catalogue/PUB08288">2 NHS Information Services. Hospital Episode Statistics, Admitted Patient Care 2011–12: Summary Report. NHS Information Services 2012. </a></p>
+</div>
+<div id="ref-DOH2013">
+<p><a href="http://webarchive.nationalarchives.gov.uk/20130104202127/http://www.dh.gov.uk/en/Publicationsandstatistics/Statistics/Performancedataandstatistics/AccidentandEmergency/DH_077485">3 Department Of Health. A&amp;E Attendances. Department Of Health 2013. </a></p>
+</div>
+<div id="ref-Lowthian2011">
+<p><a href="https://doi.org/10.1136/emj.2010.099226">4 Lowthian JA, Curtis AJ, Cameron PA <em>et al.</em> Systematic review of trends in emergency department attendances: An australian perspective. <em>Emergency Medicine Journal</em> 2011;<strong>28</strong></a></p>
+</div>
+<div id="ref-Hing2012">
+<p><a href="https://www.cdc.gov/nchs/data/databriefs/db102.pdf">5 Hing E, Bhuiya F. Wait time for treatment in hospital emergency departments: 2009. <em>NCHS Data Brief</em> 2012;1–8. </a></p>
+</div>
+<div id="ref-Guttmann2011">
+<p><a href="https://doi.org/10.1136/bmj.d2983">6 Guttmann A, Schull MJ, Vermeulen MJ <em>et al.</em> Association between waiting times and short term mortality and hospital admission after departure from emergency department: population based cohort study from Ontario, Canada. <em>BMJ: British Medical Journal</em> 2011;<strong>342</strong></a></p>
+</div>
+<div id="ref-Kelly2007">
+<p><a href="https://doi.org/10.1071/ah070016">7 Kelly AM, Bryant M, Cox L <em>et al.</em> Improving emergency department efficiency by patient streaming to outcomes-based teams. <em>Australian Health Review</em> 2007;<strong>31</strong>:16–21. </a></p>
+</div>
+<div id="ref-Windle2006">
+<p><a href="https://doi.org/10.1002/9780470757321">8 Windle J, Staff M, Mackway-Jones K <em>et al.</em> <em>Emergency triage</em>. Blackwell Publishing Ltd 2006. </a></p>
+</div>
+<div id="ref-Leegon2005">
+<p><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1560667/">9 Leegon J, Jones I, Lanaghan K <em>et al.</em> Predicting hospital admission for Emergency Department patients using a Bayesian network. <em>AMIA Annual Symposium Proceedings</em> 2005;1022.</a></p>
+</div>
+<div id="ref-Dexheimer2007">
+<p><a href="https://www.ncbi.nlm.nih.gov/pubmed/18694037">10 Dexheimer JW, Leegon J, Aronsky D. Predicting hospital admission at triage in an emergency department. <em>AMIA Annual Symposium Proceedings</em> 2007;937. </a></p>
+</div>
+<div id="ref-White2010">
+<p><a href="https://doi.org/10.1136/emj.2009.077842">11 White AL, Armstrong PA, Thakore S. Impact of senior clinical review on patient disposition from the emergency department. <em>Emergency Medicine Journal</em> 2010;<strong>27</strong></a></p>
+</div>
+<div id="ref-Howell2004">
+<p><a href="https://doi.org/10.1111/j.1525-1497.2004.30431.x">12 Howell EE, Bessman ES, Rubin HR. Hospitalists and an innovative emergency department admission process. <em>Journal of General Internal Medicine</em> 2004;<strong>19</strong>:266–8. </a></p>
+</div>
+<div id="ref-Levine2006">
+<p><a href="https://doi.org/10.1016/j.jemermed.2005.08.007">13 Levine SD, Colwell CB, Pons PT <em>et al.</em> How well do paramedics predict admission to the hospital? A prospective study. <em>Journal of Emergency Medicine</em> 2006;<strong>31</strong>:1–5. </a></p>
+</div>
+<div id="ref-Kosowsky2001">
+<p><a href="https://doi.org/10.1053/ajem.2001.20033">14 Kosowsky JM, Shindel S, Liu T <em>et al.</em> Can emergency department triage nurses predict patients’ dispositions? <em>American Journal of Emergency Medicine</em> 2001;<strong>19</strong>:10–4. </a></p>
+</div>
+<div id="ref-Brillman1996">
+<p><a href="https://www.sciencedirect.com/science/article/pii/S0196064496702408?via%3Dihub">15 Brillman JC, Doezema D, Tandberg D <em>et al.</em> Triage: limitations in predicting need for emergent care and hospital admission. <em>Annals of Emergency Medicine</em> 1996;<strong>27</strong>:493–500.</a></p>
+</div>
+<div id="ref-Beardsell2010">
+<p><a href="https://doi.org/10.1136/emj.2010.096362">16 Beardsell I, Robinson S. Can emergency department nurses performing triage predict the need for admission? <em>Emergency Medicine Journal</em> 2010;<strong>28</strong>:959–62. </a></p>
+</div>
+<div id="ref-Meisel2008">
+<p><a href="https://doi.org/10.1080/10903120802096647">17 Meisel ZF, Pollack CV, Mechem CC <em>et al.</em> Derivation and internal validation of a rule to predict hospital admission in prehospital patients. <em>Prehospital Emergency Care</em> 2008;<strong>12</strong>:314–9. </a></p>
+</div>
+<div id="ref-Sun2011">
+<p><a href="https://doi.org/10.1111/j.1553-2712.2011.01125.x">18 Sun Y, Heng BH, Tay SY <em>et al.</em> Predicting hospital admissions at emergency department triage using routine administrative data. <em>Academic Emergency Medicine</em> 2011;<strong>18</strong>:844–50. </a></p>
+</div>
+<div id="ref-Burch2008">
+<p><a href="https://doi.org/10.1136/emj.2007.057661">19 Burch VC, Tarr G, Morroni C. Modified early warning score predicts the need for hospital admission and inhospital mortality. <em>Emergency Medicine Journal</em> 2008;<strong>25</strong>:674–8. </a></p>
+</div>
+<div id="ref-Vorwerk2009">
+<p><a href="https://doi.org/10.1136/emj.2008.069062">20 Vorwerk C. MEWS: predicts hospital admission and mortality in emergency department patients. <em>Emergency Medicine Journal</em> 2009;<strong>26</strong>:466. </a></p>
+</div>
+<div id="ref-Tanabe2004">
+<p><a href="https://doi.org/10.1016/j.jen.2003.11.004">21 Tanabe P, Gimbel R, Yarnold PR <em>et al.</em> The Emergency Severity Index (version 3) 5-level triage system scores predict ED resource consumption. <em>Journal of Emergency Nursing</em> 2004;<strong>30</strong>:22–9. </a></p>
+</div>
+<div id="ref-RCP2012">
+<p><a href="https://www.rcplondon.ac.uk/projects/outputs/national-early-warning-score-news-2">22 Royal College of Physicians. National Early Warning Score (NEWS): Standardising the assessment of acute illness severity in the NHS. Report of a working party. Royal College of Physicians 2012. </a></p>
+</div>
+<div id="ref-Perez2002">
+<p><a href="https://doi.org/10.1002/sim.1391">23 Perez A, Dennis RJ, Gil JF <em>et al.</em> Use of the mean, hot deck and multiple imputation techniques to predict outcome in intensive care unit patients in Colombia. <em>Statistics in Medicine</em> 2002;<strong>21</strong>:3885–96. </a></p>
+</div>
+<div id="ref-RCT2017">
+<p><a href="https://www.R-project.org/">24 R Core Team. <em>R: A language and environment for statistical computing</em>. Vienna, Austria: R Foundation for Statistical Computing 2017.</a></p>
+</div>
+<div id="ref-Robin2011">
+<p><a href="https://doi.org/10.1186/1471-2105-12-77">25 Robin X, Turck N, Hainard A <em>et al.</em> pROC: an open-source package for R and S+ to analyze and compare ROC curves. <em>BMC Bioinformatics</em> 2011;<strong>12</strong>:77. </a></p>
+</div>
+<div id="ref-Purdy2012">
+<p><a href="http://primarycare.imedpub.com/tackling-avoidable-hospital-admissions-improving-or-compromising-quality.php?aid=298">26 Purdy S. Tackling avoidable hospital admissions: improving or compromising quality? <em>Qual Prim Care</em> 2012;<strong>20</strong>:243–4. </a></p>
+</div>
+<div id="ref-Leegon2006">
+<p><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1839665/">27 Leegon J, Jones I, Lanaghan K <em>et al.</em> Predicting hospital admission in a pediatric Emergency Department using an Artificial Neural Network. <em>AMIA Annual Symposium Proceedings</em> 2006;1004. </a></p>
+</div>
+<div id="ref-Kahneman2011">
+<p><a href="http://www.worldcat.org/title/thinking-fast-and-slow/oclc/917473664">28 Daniel Kahneman <em>Thinking, fast and slow</em>. 2011. </a></p>
+</div>
+<div id="ref-Taylor2004">
+<p><a href="https://doi.org/10.1136/emj.2002.003723">29 Taylor C, Benger JR. Patient satisfaction in emergency medicine. <em>Emergency Medicine Journal</em> 2004;<strong>21</strong>:528–32. </a></p>
+</div>
+<div id="ref-Bucheli2004">
+<p><a href="https://doi.org/10.1097/00063110-200402000-00006">30 Bucheli B, Martina B. Reduced length of stay in medical emergency department patients: a prospective controlled study on emergency physician staffing. <em>European Journal of Emergency Medicine</em> 2004;<strong>11</strong>:29–34. </a></p>
+</div>
+<div id="ref-Downing2002">
+<p><a href="https://doi.org/10.1136/emj.19.6.531">31 Downing A, Wilson R. Temporal and demographic variations in attendance at accident and emergency departments. <em>Emergency Medicine Journal</em> 2002;<strong>19</strong>:531–5. </a></p>
+</div>
+<div id="ref-Duffy2002">
+<p><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1314195/">32 Duffy R, Neville R, Staines H. Variance in practice emergency medical admission rates: can it be explained? <em>British Journal of General Practice</em> 2002;<strong>52</strong>:14–7. </a></p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
